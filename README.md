@@ -17,11 +17,11 @@ __Client-side:__
 
 1. __Signing In__  
    POST /users/signin
-   
+
    Description:
    User sends precalculated salted hash and the username.
    If the hash and the username have a corresponding entry in the database, the session token is generated with a PRNG, the user is redirected to the home page view.
-   
+
    Parameters:  
 
    |Parameter|Description|
@@ -42,15 +42,15 @@ __Client-side:__
     token: string
    }
    ```
-    
+
 
 2. __Signing Up__  
    POST /users
-   
+
    Description:
    User sends precalculated salted hash, the username and the email.
    If the username and the email do not exist in the database, the session token is generated with a PRNG, new user is added to the database and the user is redirected to the home page view.
-   
+
    Parameters:  
 
    |Parameter|Description|
@@ -73,23 +73,23 @@ __Client-side:__
     token: string
    }
    ```
-   
+
 3. __Home Page__
   *  GET /home/:id
-   
+
    Description:
    User sends precalculated salted hash, the username and the email.
    If the username and the email do not exist in the database, the session token is generated with a PRNG, new user is added to the database and the user is redirected to the home page view.
-   
+
    Parameters:  
 
    |Parameter|Description|
    |:-------------:|:-------------:|
-   |userId| Username ID of the current user|
+   |username| Username of the current user|
    Request:
    ```
    {
-    userId: string
+    username: string
    }
    ```
    Result:
@@ -103,7 +103,7 @@ __Client-side:__
                 description: string,
                 tags: [Array of strings],
                 category: string,
-                img: string (/img/posts/string),
+                img: string (/img/post/string),
                 likes: [Array of userIDs],
                 comments: [Array of Objects of the type:
                           {
@@ -121,16 +121,16 @@ __Client-side:__
      Description:
      Toggle the like (liking/unliking) the picture.
      Parameters:
-     
+
      |Parameter|Description|
      |:-------------:|:-------------:|
-     |userId| Username ID of the current user|
+     |username| Username of the current user|
      |sessionToken| User confirms the identity with security token|
      |imageId| ID of the image to be liked/unliked|
      Request:
      ```
      {
-      userId: string,
+      username: string,
       imageId: string,
       sessionToken: string
      }
@@ -143,19 +143,19 @@ __Client-side:__
      ```
 4. __Profile__
   *  GET /users/:id
-  
+
      Description:
      Get the profile of the user.
-     
+
      Parameters:
-     
+
      |Parameter|Description|
      |:-------------:|:-------------:|
-     |userId| Username ID of the current user|
+     |username| Username of the current user|
      Request:
      ```
      {
-      userId: string
+      username: string
      }
      ```
      Result:
@@ -172,7 +172,7 @@ __Client-side:__
         {
           id: mongoId,
           date: string (Datetime),
-          img: string (/img/posts/string),
+          img: string (/img/post/string),
         }
       ]
      ]
@@ -182,15 +182,15 @@ __Client-side:__
      Description:
      Follow or unfollow the specified user.
      Parameters:
-     
+
      |Parameter|Description|
      |:-------------:|:-------------:|
-     |userId| Username ID of the user you want to follow/unfollow|
+     |usernameToFollow| Username of the user you want to follow|
      |sessionToken| User confirms the identity with security token|
      Request:
      ```
      {
-      userId: string,
+      usernameToFollow: string,
       sessionToken: string
      }
      ```
@@ -200,13 +200,13 @@ __Client-side:__
       success: boolean
      }
      ```
-   
+
   *  PUT /users/profilepicture
 
      Description:
      Upload new profile picture
      Parameters:
-     
+
      |Parameter|Description|
      |:-------------:|:-------------:|
      |image|Binary data of the new profile image|
@@ -224,14 +224,14 @@ __Client-side:__
       success: boolean
      }
      ```
-   
+
 5. __Search__
   *  GET /users/:username
 
      Description:
      Display users based on string searched (list view)
      Parameters:
-     
+
      |Parameter|Description|
      |:-------------:|:-------------:|
      |username|String that user names to be displayed contain|
@@ -251,13 +251,13 @@ __Client-side:__
       }
      ]
      ```
-   
+
   *  GET /photos/:tag
-     
+
      Description:
      Display posts (pictures) based on tag filter (3-column grid view)
      Parameters:
-     
+
      |Parameter|Description|
      |:-------------:|:-------------:|
      |tag|Tag to be used as a filter|
@@ -273,29 +273,29 @@ __Client-side:__
       {
         id: mongoId,
         date: string (Datetime),
-        img: string (/img/posts/string),
+        img: string (/img/post/string),
       }
      ]
      ```
-      
-6. __Share__
+
+6. __Share__  
    POST /photos
-   
+
    Description:
     Upload new profile picture. The image is also added to a corresponding Users document of the current user, where his uploaded pictures are specified.
     Parameters:
-    
+
    |Parameter|Description|
    |:-------------:|:-------------:|
    |image|Binary data of the new image|
    |description|Free form description of the picture|
    |category|One of the preoffered categories|
    |tags|Array of free form tags|
-   |sessionToken| User confirms the identity with security token| 
+   |sessionToken| User confirms the identity with security token|
    Request:
     ```
     {
-     image: blob (binary), 
+     image: blob (binary),
      description: string,
      category: string,
      tags: [Array of Strings],
@@ -311,11 +311,11 @@ __Client-side:__
 
 7. __Photo View__
   *  GET /photos/:id
-  
+
     Description:
     Display the chosen photo and all data corresponding to it.
     Parameters:
-    
+
    |Parameter|Description|
    |:-------------:|:-------------:|
    |imageId|ID of the image selected|
@@ -333,7 +333,7 @@ __Client-side:__
       description: string,
       tags: [Array of strings],
       category: string,
-      img: string (/img/posts/string),
+      img: string (/img/post/string),
       likes: [Array of userIDs],
       comments: [Array of Objects of the type:
             {
@@ -344,20 +344,20 @@ __Client-side:__
     }
     ```
   *  POST /photos/comment
-   
+
     Description:
     Post a comment to a photo, comment is added to the photo document "comment" property (key)
     Parameters:
-    
+
    |Parameter|Description|
    |:-------------:|:-------------:|
    |imageId|ID of the image being commented|
    |comment|Content of the comment|
-   |sessionToken| User confirms the identity with security token| 
+   |sessionToken| User confirms the identity with security token|
    Request:
     ```
     {
-     imageId: string, 
+     imageId: string,
      comment: string,
      sessionToken: string
     }
@@ -368,7 +368,7 @@ __Client-side:__
      boolean: true
     }
     ```
-   
+
 
 ## Database Structure
 ### Sample document in Users collection
@@ -394,7 +394,7 @@ __Client-side:__
   description: string,
   tags: [Array of strings],
   category: string,
-  img: string (/img/posts/string),
+  img: string (/img/post/string),
   likes: [Array of userIDs],
   comments: [Array of Objects of the type:
             {
@@ -410,4 +410,5 @@ __Client-side:__
   userId: mongoId,
   sessionToken: string,
   expires: date
+}
 ```
