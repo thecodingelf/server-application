@@ -39,8 +39,10 @@ function handleError(res, reason, message, code) {
   res.status(code || 500).json({"error": message});
 }
 
-
 /*
+                Signing In and Signing Up
+  _____________________________________________________________
+
   The following route signs the user in by returning sessionToken if hash and
   username correspond to the entry in the database. Returns false as valid boolean value
   and "0000" as a security token if the entry is not found. (see README.md)
@@ -61,6 +63,9 @@ app.post("/users", function(req, res) {
 });
 
 /*
+                            Search
+  _____________________________________________________________
+
   The following route returns an array of users based on string searched, array
   containing username, profile picture, userId.
   (see README.md)
@@ -70,15 +75,86 @@ app.get("/users/:username", function(req, res) {
 });
 
 /*
-  User provides his username and recieves an array of the most recent photos
-  from users that person follows.
+  The following route returns an array of images based on string (tag) searched, array
+  containing image URL, imageId and datetime posted
+  (see README.md)
+*/
+app.get("/photos/:tag", function(req, res) {
+
+});
+
+/*
+                            Home
+  _____________________________________________________________
+
+  User provides (implicitly) his username and recieves an array of the most
+  recent photos from users that person follows along with metadata.
   (see README.md)
 */
 app.get("/home/:id", function(req, res) {
+
 });
 
-app.put("/contacts/:id", function(req, res) {
+/*
+                            Share
+  _____________________________________________________________
+  An image and metadata is send to server where the photo is saved and in case of
+  success, the result is sent to user as imageId.
+  (see README.md)
+*/
+app.post("/photos", function(req, res) {
+
 });
 
-app.delete("/contacts/:id", function(req, res) {
+/*
+                      Photo Interaction
+  _____________________________________________________________
+  Leave a comment under a photo, with imageId, comment and sessionToken supplied
+  (see README.md)
+*/
+app.post("/photos/comment", function(req, res) {
+
+});
+
+/*
+  Leave a like under photo (unlike if already liked), with imageId
+  and sessionToken supplied
+  (see README.md)
+*/
+app.post("/photos/like", function(req, res) {
+
+});
+
+/*
+                           Profile
+  _____________________________________________________________
+  Get the profile of the user with the images posted by providing userId
+  (see README.md)
+*/
+app.get("/users/:id", function(req, res) {
+
+});
+
+/*
+  Upload new profile picture using sessionToken
+*/
+app.put("/users/profilepicture", function(req, res) {
+
+});
+
+/*
+  Follow or unfollow specified user, using sessionToken
+*/
+app.post("/users/follow", function(req, res) {
+
+});
+
+/*
+                         Photo View
+  _____________________________________________________________
+  Get the photo and all related metadata to the client when imageId is specified.
+  (see README.md)
+*/
+app.get("/photos/:id", function(req, res) {
+
 });

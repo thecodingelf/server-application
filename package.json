@@ -1,5 +1,5 @@
 {
-  "name": "Mesta server-application",
+  "name": "mesta-server",
   "version": "0.0.1",
   "description": "Application serves data connected with Mesta client application",
   "main": "server.js",
@@ -10,6 +10,6 @@
   "dependencies": {
     "body-parser": "^1.13.3",
     "express": "^4.13.3",
-    "mongodb": "^3.2.11"
+    "mongodb": "^2.2.22"
   }
 }
