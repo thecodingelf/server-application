@@ -185,7 +185,7 @@ __Client-side:__
      
      |Parameter|Description|
      |:-------------:|:-------------:|
-     |userId| Username ID of the user you want to follow|
+     |userId| Username ID of the user you want to follow/unfollow|
      |sessionToken| User confirms the identity with security token|
      Request:
      ```
@@ -311,20 +311,63 @@ __Client-side:__
 
 7. __Photo View__
   *  GET /photos/:id
-   
-     Parameters:
-   
-     Request:
- 
-     Result:
-
+  
+    Description:
+    Display the chosen photo and all data corresponding to it.
+    Parameters:
+    
+   |Parameter|Description|
+   |:-------------:|:-------------:|
+   |imageId|ID of the image selected|
+   Request:
+    ```
+    {
+     imageId: string
+    }
+    ```
+   Result:
+    ```
+    {
+      owner: userId,
+      date: string (Datetime),
+      description: string,
+      tags: [Array of strings],
+      category: string,
+      img: string (/img/posts/string),
+      likes: [Array of userIDs],
+      comments: [Array of Objects of the type:
+            {
+              personId: userId,
+              comment: string
+            }
+            ]
+    }
+    ```
   *  POST /photos/comment
    
-     Parameters:
-   
-     Request:
- 
-     Result:
+    Description:
+    Post a comment to a photo, comment is added to the photo document "comment" property (key)
+    Parameters:
+    
+   |Parameter|Description|
+   |:-------------:|:-------------:|
+   |imageId|ID of the image being commented|
+   |comment|Content of the comment|
+   |sessionToken| User confirms the identity with security token| 
+   Request:
+    ```
+    {
+     imageId: string, 
+     comment: string,
+     sessionToken: string
+    }
+    ```
+   Result:
+    ```
+    {
+     boolean: true
+    }
+    ```
    
 
 ## Database Structure
@@ -360,4 +403,11 @@ __Client-side:__
             }
             ]
 }
+```
+### Sample document in Sessions collection
+```
+{
+  userId: mongoId,
+  sessionToken: string,
+  expires: date
 ```
