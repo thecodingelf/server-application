@@ -6,8 +6,9 @@ __Both sides:__
 * npm - v. 4.1.1
 
 __Server-side__
-* MongoDB - v. 3.2.11
-* Express.js - latest
+* "body-parser": "^1.13.3"
+* "express": "^4.13.3"
+* "mongodb": "^2.2.22"
 
 __Client-side:__
 * AngularJS - latest
@@ -75,7 +76,7 @@ __Client-side:__
    ```
 
 3. __Home Page__
-  *  GET /home/:id
+  *  GET /home/:username
 
    Description:
    User sends precalculated salted hash, the username and the email.
@@ -124,13 +125,11 @@ __Client-side:__
 
      |Parameter|Description|
      |:-------------:|:-------------:|
-     |username| Username of the current user|
      |sessionToken| User confirms the identity with security token|
      |imageId| ID of the image to be liked/unliked|
      Request:
      ```
      {
-      username: string,
       imageId: string,
       sessionToken: string
      }
@@ -151,11 +150,11 @@ __Client-side:__
 
      |Parameter|Description|
      |:-------------:|:-------------:|
-     |username| Username of the current user|
+     |userId| Username ID of the current user|
      Request:
      ```
      {
-      username: string
+      userId: string
      }
      ```
      Result:
@@ -310,7 +309,7 @@ __Client-side:__
     ```
 
 7. __Photo View__
-  *  GET /photos/:id
+  *  GET /photos/:imageId
 
     Description:
     Display the chosen photo and all data corresponding to it.
