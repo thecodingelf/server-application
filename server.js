@@ -71,24 +71,24 @@ app.delete("/users/in", function (req, res) {
  */
 app.post("/users", function (req, res) {
     // Check that entered username is not in database.
-    user_exists = db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (err) {
         } else {
             if (docs.length != 0) {
-                return true
+                user_exists = "true";
             }
             else {
-                return false
+                user_exists = "false";
             }
         }
     });
 
-    if (user_exists === true) {
+    if (user_exists) {
         // If entered username already exists:
         returnArray = {"sessionToken": "0000", "valid": false};
         res.status(201).json(returnArray);
     }
-    else {
+    else if (user_exists = false){
         /* Add new user to DB */
         db.collection(USERS_COLLECTION).insertOne({
                 username: req.body.username,
@@ -127,7 +127,7 @@ app.post("/users", function (req, res) {
                             if (err) {
                             } else {
                                 returnArray = {"sessionToken": sessionTokenResult, "valid": true};
-                                res.status(201).json(user_exists);
+                                res.status(201).json(returnArray);
                             }
                         });
                 }
