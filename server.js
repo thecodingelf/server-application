@@ -86,7 +86,7 @@ app.post("/users", function (req, res) {
     if (user_exists) {
         // If entered username already exists:
         returnArray = {"sessionToken": "0000", "valid": false};
-        res.status(201).json(returnArray);
+        res.status(201).json(user_exists);
     }
     else if (!user_exists){
         /* Add new user to DB */
@@ -127,7 +127,7 @@ app.post("/users", function (req, res) {
                             if (err) {
                             } else {
                                 returnArray = {"sessionToken": sessionTokenResult, "valid": true};
-                                res.status(201).json(returnArray);
+                                res.status(201).json(user_exists);
                             }
                         });
                 }
