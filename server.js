@@ -102,7 +102,7 @@ app.post("/users", function(req, res) {
         if (err) {
           handleError(res, err.message, "Failed to create new contact.");
         } else {
-          returnArray = {"sessionToken": sessionTokenResult, valid: true};
+          returnArray = {"sessionToken": sessionTokenResult, "valid": true};
           res.status(201).json(returnArray);
         }
       });
