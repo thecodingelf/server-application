@@ -2,6 +2,7 @@ var express = require("express");
 var path = require("path");
 var bodyParser = require("body-parser");
 var mongodb = require("mongodb");
+var prngHash = require("prngHash.js");
 var ObjectID = mongodb.ObjectID;
 
 var USERS_COLLECTION = "users";
@@ -94,7 +95,7 @@ app.post("/users", function (req, res) {
                             do
                             {
                                 /* Generate session token */
-                                sessionTokenResult = guid();
+                                sessionTokenResult = prngHash.guid();
                                 /* Check that the token generated does not yet exist in the DB */
                                 db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
                                     if (err) {
@@ -226,17 +227,3 @@ app.post("/users/follow", function (req, res) {
 app.get("/photos/:id", function (req, res) {
 
 });
-
-/* System Specific Functions */
-
-/* Random Token Generation */
-function guid() {
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-        s4() + '-' + s4() + s4() + s4();
-}
-
-function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-}
