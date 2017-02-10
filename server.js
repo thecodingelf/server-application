@@ -76,7 +76,7 @@ app.post("/users", function (req, res) {
     db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (err) {
         } else {
-            if (docs.length != 0) {
+            if (docs.length > 0) {
                 user_exists = true;
                 checkRepetition = docs;
             }
