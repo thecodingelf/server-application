@@ -70,7 +70,7 @@ app.delete("/users/in", function(req, res) {
   (see README.md)
 */
 app.post("/users", function(req, res) {
-  db.collection(USERS_COLLECTION).insertOne({ username: "Roman", hash: "12345" }, function(err, doc) {
+  db.collection(USERS_COLLECTION).insertOne({ username: req.body.username, hash: req.body.hash }, function(err, doc) {
     if (err) {
       handleError(res, err.message, "Failed to create new contact.");
     } else {
