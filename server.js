@@ -63,18 +63,47 @@ app.delete("/users/in", function(req, res) {
 });
 
 /*
-  The following route signs up the user and returns, by storing user data in
+  The following route signs up the user by storing user data in
   Users collection and session in the Sessions collection, returning sessionToken
   if hash and username correspond to the entry in the database. Returns false as
   valid boolean value and "0000" as a security token if the entry is not found.
   (see README.md)
 */
 app.post("/users", function(req, res) {
+  /* Add new user to DB */
   db.collection(USERS_COLLECTION).insertOne({ username: req.body.username, hash: req.body.hash }, function(err, doc) {
     if (err) {
       handleError(res, err.message, "Failed to create new contact.");
     } else {
-      res.status(201).json(doc.ops[0]);
+      newToken = true;
+      do
+      {
+        /* Generate session token */
+        sessionTokenResult = guid();
+        /* Check that the token generated does not yet exist in the DB */
+        db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function(err, docs) {
+          if (err) {
+            handleError(res, err.message, "Failed to get contacts.");
+          } else {
+            if(docs.length != 0){
+              newToken == false;
+            }
+          }
+        });
+      }
+      while(!newToken);
+
+      /*
+        If user has been added to the DB, add the generated session token to the database.
+      */
+      db.collection(SESSIONS_COLLECTION).insertOne({ username: req.body.username, sessionToken: sessionTokenResult},
+          function(err, doc) {
+        if (err) {
+          handleError(res, err.message, "Failed to create new contact.");
+        } else {
+          res.status(201).json(doc.ops[0]);
+        }
+      });
     }
   });
 });
@@ -175,3 +204,17 @@ app.post("/users/follow", function(req, res) {
 app.get("/photos/:id", function(req, res) {
 
 });
+
+/* System Specific Functions */
+
+/* Random Token Generation */
+function guid() {
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
+}
+
+function s4() {
+  return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+}
