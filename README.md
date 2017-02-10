@@ -17,7 +17,7 @@ __Client-side:__
 ## Rest API
 
 1. __Signing In__  
-   POST /users/signin
+   POST /users/in
 
    Description:
    User sends precalculated salted hash and the username.
@@ -43,6 +43,30 @@ __Client-side:__
     token: string
    }
    ```
+
+    __Signing Out__
+    DELETE /users/in
+
+    Description:
+    User sends personal sessionToken. sessionToken is deleted from Sessions collection and the user is logged out
+
+    Parameters:
+
+    |Parameter|Description|
+    |:-------------:|:-------------:|
+    |sessionToken|User confirms the identity with security token|
+    Request:
+    ```
+    {
+     sessionToken: string
+    }
+    ```
+    Result:
+    ```
+    {
+     valid: boolean
+    }
+     ```
 
 
 2. __Signing Up__  
@@ -319,12 +343,15 @@ __Client-side:__
    |:-------------:|:-------------:|
    |imageId|ID of the image selected|
    Request:
+
     ```
     {
      imageId: string
     }
     ```
+
    Result:
+
     ```
     {
       owner: userId,
@@ -344,9 +371,9 @@ __Client-side:__
     ```
   *  POST /photos/comment
 
-    Description:
-    Post a comment to a photo, comment is added to the photo document "comment" property (key)
-    Parameters:
+   Description:
+   Post a comment to a photo, comment is added to the photo document "comment" property (key)
+   Parameters:
 
    |Parameter|Description|
    |:-------------:|:-------------:|
@@ -354,6 +381,7 @@ __Client-side:__
    |comment|Content of the comment|
    |sessionToken| User confirms the identity with security token|
    Request:
+
     ```
     {
      imageId: string,
@@ -362,6 +390,7 @@ __Client-side:__
     }
     ```
    Result:
+
     ```
     {
      boolean: true
