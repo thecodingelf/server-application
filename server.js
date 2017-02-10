@@ -72,7 +72,7 @@ app.delete("/users/in", function (req, res) {
 app.post("/users", function (req, res) {
     var user_exists;
     // Check that entered username is not in database.
-    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs, user_exists) {
         if (err) {
         } else {
             if (docs.length != 0) {
