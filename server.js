@@ -128,7 +128,7 @@ app.post("/users", function (req, res) {
                             if (err) {
                             } else {
                                 returnArray = {"sessionToken": sessionTokenResult, "valid": true};
-                                res.status(201).json(returnArray);
+                                res.status(201).json(user_exists);
                             }
                         });
                 }
