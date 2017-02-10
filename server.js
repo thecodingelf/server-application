@@ -80,6 +80,7 @@ app.post("/users", function(req, res) {
     }
   });
 
+  if(!user_exists){
   /* Add new user to DB */
   db.collection(USERS_COLLECTION).insertOne({ username: req.body.username, hash: req.body.hash, email: req.body.email },
       function(err, doc) {
@@ -116,7 +117,9 @@ app.post("/users", function(req, res) {
       });
     }
   });
+  }
 });
+
 
 /*
                             Search
