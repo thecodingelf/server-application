@@ -71,7 +71,8 @@ app.delete("/users/in", function(req, res) {
 */
 app.post("/users", function(req, res) {
   /* Add new user to DB */
-  db.collection(USERS_COLLECTION).insertOne({ username: req.body.username, hash: req.body.hash }, function(err, doc) {
+  db.collection(USERS_COLLECTION).insertOne({ username: req.body.username, hash: req.body.hash, email: req.body.email },
+      function(err, doc) {
     if (err) {
       handleError(res, err.message, "Failed to create new contact.");
     } else {
