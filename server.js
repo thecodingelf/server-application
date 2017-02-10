@@ -70,21 +70,20 @@ app.delete("/users/in", function (req, res) {
  (see README.md)
  */
 app.post("/users", function (req, res) {
-    user_exists = "";
     // Check that entered username is not in database.
-    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+    user_exists = db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (err) {
         } else {
             if (docs.length != 0) {
-                user_exists = "true";
+                return true
             }
             else {
-                user_exists = "false";
+                return false
             }
         }
     });
 
-    if (user_exists === "true") {
+    if (user_exists === true) {
         // If entered username already exists:
         returnArray = {"sessionToken": "0000", "valid": false};
         res.status(201).json(returnArray);
