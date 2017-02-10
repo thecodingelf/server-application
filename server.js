@@ -4,7 +4,9 @@ var bodyParser = require("body-parser");
 var mongodb = require("mongodb");
 var ObjectID = mongodb.ObjectID;
 
-var CONTACTS_COLLECTION = "contacts";
+var USERS_COLLECTION = "users";
+var PHOTOS_COLLECTION = "photos";
+var SESSIONS_COLLECTION = "sessions";
 
 var app = express();
 app.use(express.static(__dirname + "/public"));
@@ -40,14 +42,23 @@ function handleError(res, reason, message, code) {
 }
 
 /*
-                Signing In and Signing Up
+                Signing In/Loging Out and Signing Up
   _____________________________________________________________
 
-  The following route signs the user in by returning sessionToken if hash and
+  The following route signs the user in /home/giograf by returning sessionToken if hash and
   username correspond to the entry in the database. Returns false as valid boolean value
   and "0000" as a security token if the entry is not found. (see README.md)
 */
-app.post("/users/signin", function(req, res) {
+app.post("/users/in", function(req, res) {
+
+});
+
+/*
+  The following route logs the user out by deleting previously granted sessionToken from Sessions.
+  Session token to be supplied with request.
+  collection (see README.md)
+*/
+app.delete("/users/in", function(req, res) {
 
 });
 
@@ -59,7 +70,13 @@ app.post("/users/signin", function(req, res) {
   (see README.md)
 */
 app.post("/users", function(req, res) {
-
+  db.collection(USERS_COLLECTION).insertOne({ username: "Roman", hash: "12345" }, function(err, doc) {
+    if (err) {
+      handleError(res, err.message, "Failed to create new contact.");
+    } else {
+      res.status(201).json(doc.ops[0]);
+    }
+  });
 });
 
 /*
