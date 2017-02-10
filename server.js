@@ -70,6 +70,16 @@ app.delete("/users/in", function(req, res) {
   (see README.md)
 */
 app.post("/users", function(req, res) {
+  user_exists = false;
+  db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function(err, docs) {
+    if (err) {
+    } else {
+      if(docs.length != 0){
+        user_exists = true;
+      }
+    }
+  });
+
   /* Add new user to DB */
   db.collection(USERS_COLLECTION).insertOne({ username: req.body.username, hash: req.body.hash, email: req.body.email },
       function(err, doc) {
@@ -84,10 +94,9 @@ app.post("/users", function(req, res) {
         /* Check that the token generated does not yet exist in the DB */
         db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function(err, docs) {
           if (err) {
-            handleError(res, err.message, "Failed to get contacts.");
           } else {
             if(docs.length != 0){
-              newToken == false;
+              newToken = false;
             }
           }
         });
@@ -100,7 +109,6 @@ app.post("/users", function(req, res) {
       db.collection(SESSIONS_COLLECTION).insertOne({ username: req.body.username, sessionToken: sessionTokenResult},
           function(err, doc) {
         if (err) {
-          handleError(res, err.message, "Failed to create new contact.");
         } else {
           returnArray = {"sessionToken": sessionTokenResult, "valid": true};
           res.status(201).json(returnArray);
