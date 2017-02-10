@@ -84,7 +84,7 @@ app.post("/users", function (req, res) {
         }
     });
 
-    if (user_exists) {
+    if (!user_exists) {
         // If entered username already exists:
         returnArray = {"sessionToken": "0000", "valid": false};
         res.status(201).json(returnArray);
