@@ -75,65 +75,58 @@ app.post("/users", function (req, res) {
         if (err) {
         } else {
             if (docs.length != 0) {
-                return true;
+                // If entered username already exists:
+                returnArray = {"sessionToken": "0000", "valid": false};
+                res.status(201).json(returnArray);
             }
             else {
-                return false;
+                /* Add new user to DB */
+                db.collection(USERS_COLLECTION).insertOne({
+                        username: req.body.username,
+                        hash: req.body.hash,
+                        email: req.body.email
+                    },
+                    function (err, doc) {
+                        if (err) {
+                            handleError(res, err.message, "Failed to create new contact.");
+                        } else {
+                            newToken = true;
+                            do
+                            {
+                                /* Generate session token */
+                                sessionTokenResult = guid();
+                                /* Check that the token generated does not yet exist in the DB */
+                                db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
+                                    if (err) {
+                                    } else {
+                                        if (docs.length != 0) {
+                                            newToken = false;
+                                        }
+                                    }
+                                });
+                            }
+                            while (!newToken);
+
+                            /*
+                             If user has been added to the DB, add the generated session token to the database.
+                             */
+                            db.collection(SESSIONS_COLLECTION).insertOne({
+                                    username: req.body.username,
+                                    sessionToken: sessionTokenResult
+                                },
+                                function (err, doc) {
+                                    if (err) {
+                                    } else {
+                                        returnArray = {"sessionToken": sessionTokenResult, "valid": true};
+                                        res.status(201).json(returnArray);
+                                    }
+                                });
+                        }
+                    }
+                );
             }
         }
     });
-
-    if (user_exists) {
-        // If entered username already exists:
-        returnArray = {"sessionToken": "0000", "valid": false};
-        res.status(201).json(user_exists);
-    }
-    else if (!user_exists){
-        /* Add new user to DB */
-        db.collection(USERS_COLLECTION).insertOne({
-                username: req.body.username,
-                hash: req.body.hash,
-                email: req.body.email
-            },
-            function (err, doc) {
-                if (err) {
-                    handleError(res, err.message, "Failed to create new contact.");
-                } else {
-                    newToken = true;
-                    do
-                    {
-                        /* Generate session token */
-                        sessionTokenResult = guid();
-                        /* Check that the token generated does not yet exist in the DB */
-                        db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
-                            if (err) {
-                            } else {
-                                if (docs.length != 0) {
-                                    newToken = false;
-                                }
-                            }
-                        });
-                    }
-                    while (!newToken);
-
-                    /*
-                     If user has been added to the DB, add the generated session token to the database.
-                     */
-                    db.collection(SESSIONS_COLLECTION).insertOne({
-                            username: req.body.username,
-                            sessionToken: sessionTokenResult
-                        },
-                        function (err, doc) {
-                            if (err) {
-                            } else {
-                                returnArray = {"sessionToken": sessionTokenResult, "valid": true};
-                                res.status(201).json(user_exists);
-                            }
-                        });
-                }
-            }
-        );
-    }
 });
 
 
