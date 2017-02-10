@@ -75,10 +75,10 @@ app.post("/users", function (req, res) {
         if (err) {
         } else {
             if (docs.length != 0) {
-                user_exists = "true";
+                user_exists = true;
             }
             else {
-                user_exists = "false";
+                user_exists = false;
             }
         }
     });
@@ -88,7 +88,7 @@ app.post("/users", function (req, res) {
         returnArray = {"sessionToken": "0000", "valid": false};
         res.status(201).json(returnArray);
     }
-    else if (user_exists = false){
+    else if (!user_exists){
         /* Add new user to DB */
         db.collection(USERS_COLLECTION).insertOne({
                 username: req.body.username,
