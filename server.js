@@ -71,14 +71,12 @@ app.delete("/users/in", function (req, res) {
  */
 app.post("/users", function (req, res) {
     user_exists = false;
-    checkRepetition = [];
     // Check that entered username is not in database.
     db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (err) {
         } else {
-            if (docs.length > 0) {
+            if (docs.length != 0) {
                 user_exists = true;
-                checkRepetition = docs;
             }
         }
     });
@@ -122,7 +120,7 @@ app.post("/users", function (req, res) {
                             if (err) {
                             } else {
                                 returnArray = {"sessionToken": sessionTokenResult, "valid": true};
-                                res.status(201).json(checkRepetition);
+                                res.status(201).json(user_exists);
                             }
                         });
                 }
