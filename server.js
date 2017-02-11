@@ -52,10 +52,9 @@ function handleError(res, reason, message, code) {
 app.post("/users/in", function (req, res) {
 
     // Check that entered username is in database.
-    // ToDo Check that it does not use RegEXP and searches for exact username entered
     db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (err){
-            // If entered username or password are incorrect
+            // In case of an error. (username not found)
             returnArray = {"token": "0000", "valid": false};
             res.status(201).json(returnArray);
 
@@ -114,7 +113,30 @@ app.post("/users/in", function (req, res) {
  collection (see README.md)
  */
 app.delete("/users/in", function (req, res) {
+    // Check that entered username is in database.
+    db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
+        if (err){
+            // If entered username or password are incorrect
+            returnArray = {"valid": false};
+            res.status(201).json(returnArray);
+        }
+        else if (docs.length == 0){
+            // If entered username or password are incorrect
+            returnArray = {"valid": false};
+            res.status(201).json(returnArray);
+        }
+        else if (req.body.hash == docs[0].hash) {
+            // If entered username or password are incorrect
+            returnArray = {"valid": true};
+            res.status(201).json(returnArray);
+        }
+        else {
+            // If entered username or password are incorrect
+            returnArray = {"valid": false};
+            res.status(201).json(returnArray);
 
+        }
+    });
 });
 
 /*
