@@ -41,6 +41,8 @@ function handleError(res, reason, message, code) {
     res.status(code || 500).json({"error": message});
 }
 
+
+
 /*
  Signing In/Loging Out and Signing Up
  _____________________________________________________________
@@ -136,7 +138,11 @@ app.post("/users", function (req, res) {
                 db.collection(USERS_COLLECTION).insertOne({
                         username: req.body.username,
                         hash: req.body.hash,
-                        email: req.body.email
+                        email: req.body.email,
+                        followers: [],
+                        following: [],
+                        photos: [],
+                        profilePicture: "img/placeholder.jpg"
                     },
                     function (err, doc) {
                         if (err) {
@@ -185,6 +191,7 @@ app.post("/users", function (req, res) {
         }
     });
 });
+
 
 
 /*
