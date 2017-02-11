@@ -279,11 +279,11 @@ app.put("/users/profilepicture", function (req, res) {
  */
 app.post("/users/follow", function (req, res) {
     // Get user to be followed
-    var userToFollow = db.collection(USERS_COLLECTION).findOne({username: req.body.usernameToFollow});
+    var userToFollow = db.collection(USERS_COLLECTION).find({username: req.body.usernameToFollow});
     // Get the current username
-    var currentUsername = db.collection(SESSIONS_COLLECTION).findOne({username: req.body.sessionToken});
+    var currentUsername = db.collection(SESSIONS_COLLECTION).find({username: req.body.sessionToken});
     // Get the current user
-    var currentUser = db.collection(USERS_COLLECTION).findOne({username: currentUsername.username});
+    var currentUser = db.collection(USERS_COLLECTION).find({username: currentUsername.username});
     var returnArray = [userToFollow, currentUsername, currentUser];
     res.status(201).json(returnArray);
 });
