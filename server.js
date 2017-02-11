@@ -51,6 +51,47 @@ function handleError(res, reason, message, code) {
  */
 app.post("/users/in", function (req, res) {
 
+    // Check that entered username is in database.
+    var user_exists = db.collection(USERS_COLLECTION).findOne({username: req.body.username}).toArray(function (err, docs) {
+        if (req.body.hash == docs.hash) {
+            newToken = true;
+            do
+            {
+                /* Generate session token */
+                sessionTokenResult = guid();
+                /* Check that the token generated does not yet exist in the DB */
+                db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
+                    if (err) {
+                    } else {
+                        if (docs.length != 0) {
+                            newToken = false;
+                        }
+                    }
+                });
+            }
+            while (!newToken);
+
+            /*
+             If user has been added to the DB, add the generated session token to the database.
+             */
+            db.collection(SESSIONS_COLLECTION).insertOne({
+                    username: req.body.username,
+                    sessionToken: sessionTokenResult
+                },
+                function (err, doc) {
+                    if (err) {
+                    } else {
+                        returnArray = {"sessionToken": sessionTokenResult, "valid": true};
+                        res.status(201).json(returnArray);
+                    }
+                });
+        } else {
+            // If entered username or password are incorrect
+            returnArray = {"sessionToken": "0000", "valid": false};
+            res.status(201).json(returnArray);
+
+        }
+    });
 });
 
 /*
@@ -70,16 +111,12 @@ app.delete("/users/in", function (req, res) {
  (see README.md)
  */
 app.post("/users", function (req, res) {
+
     // Check that entered username is not in database.
-    var user_exists = db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (err) {
         } else {
-            if (docs.length != 0) {
-                // If entered username already exists:
-                returnArray = {"sessionToken": "0000", "valid": false};
-                res.status(201).json(returnArray);
-            }
-            else {
+            if (docs.length == 0) {
                 /* Add new user to DB */
                 db.collection(USERS_COLLECTION).insertOne({
                         username: req.body.username,
@@ -124,6 +161,11 @@ app.post("/users", function (req, res) {
                         }
                     }
                 );
+            }
+            else {
+                // If entered username already exists:
+                returnArray = {"sessionToken": "0000", "valid": false};
+                res.status(201).json(returnArray);
             }
         }
     });
@@ -231,8 +273,8 @@ app.get("/photos/:id", function (req, res) {
 
 /* Random Token Generation */
 function guid() {
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-        s4() + '-' + s4() + s4() + s4();
+    return s4() + s4() + s4() + s4() +
+        s4() + s4() + s4() + s4() + s4() + s4() + s4();
 }
 
 function s4() {
