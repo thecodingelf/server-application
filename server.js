@@ -284,7 +284,7 @@ app.post("/users/follow", function (req, res) {
     var currentUsername = db.collection(SESSIONS_COLLECTION).find({username: req.body.sessionToken});
     // Get the current user
     var currentUser = db.collection(USERS_COLLECTION).find({username: currentUsername.username});
-    var returnArray = [userToFollow, currentUsername, currentUser];
+    var returnArray = userToFollow;
     res.status(201).json(returnArray);
 });
 
