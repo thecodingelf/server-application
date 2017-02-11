@@ -112,7 +112,7 @@ app.post("/users/in", function (req, res) {
  Session token to be supplied with request.
  collection (see README.md)
  */
-app.delete("/users/in", function (req, res) {
+app.post("/users/out", function (req, res) {
     // Check that entered username is in database.
     db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
         if (err){
@@ -125,14 +125,9 @@ app.delete("/users/in", function (req, res) {
             returnArray = {"valid": false};
             res.status(201).json(returnArray);
         }
-        else if (req.body.hash == docs[0].hash) {
-            // If entered username or password are incorrect
-            returnArray = {"valid": true};
-            res.status(201).json(returnArray);
-        }
         else {
             // If entered username or password are incorrect
-            returnArray = {"valid": false};
+            returnArray = {"valid": true};
             res.status(201).json(returnArray);
 
         }
