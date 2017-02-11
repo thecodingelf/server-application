@@ -279,7 +279,7 @@ app.put("/users/profilepicture", function (req, res) {
  */
 app.post("/users/follow", function (req, res) {
     // Get user to be followed
-    var userToFollow = db.collection(USERS_COLLECTION).find({username: req.body.usernameToFollow}).toArray();
+    var userToFollow = db.collection(USERS_COLLECTION).findOne({username: req.body.usernameToFollow});
     console.log(userToFollow);
 });
 
