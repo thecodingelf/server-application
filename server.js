@@ -59,7 +59,7 @@ app.post("/users/in", function (req, res) {
             res.status(201).json(returnArray);
 
         }
-        else if (req.body.hash == docs[0].hash) {
+        else if (docs.length != 0 && req.body.hash == docs[0].hash) {
             newToken = true;
             do
             {
