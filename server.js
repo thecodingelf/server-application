@@ -92,7 +92,7 @@ app.post("/users/in", function (req, res) {
                     }
                 });
         }
-        else {
+        else if (docs.length == 0){
             // If entered username or password are incorrect
             returnArray = {"sessionToken": "0000", "valid": false};
             res.status(201).json(returnArray);
