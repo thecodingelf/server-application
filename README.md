@@ -21,7 +21,8 @@ __Client-side:__
 
    Description:
    User sends precalculated salted hash and the username.
-   If the hash and the username have a corresponding entry in the database, the session token is generated with a PRNG, the user is redirected to the home page view.
+   If the hash and the username have a corresponding entry in the database, the session token is generated with a PRNG,
+   the user is redirected to the home page view.
 
    Parameters:  
 
@@ -45,10 +46,10 @@ __Client-side:__
    ```
 
     __Signing Out__
-    DELETE /users/in
+    POST /users/out
 
     Description:
-    User sends personal sessionToken. sessionToken is deleted from Sessions collection and the user is logged out
+    User sends personal sessionToken. sessionToken is deleted from Sessions collection and the user is logged out.
 
     Parameters:
 
@@ -139,7 +140,8 @@ __Client-side:__
             ]
    }
    ```
-    P.S. The resulting array is not filtered by datetime - load on the client.
+
+P.S. The resulting array is not filtered by datetime - load on the client.
 
   *  POST /photos/like
 
@@ -403,9 +405,8 @@ __Client-side:__
 ```
 {
   id: mongoId,
-  sessionToken: string (long, random)
   username: string,
-  password: (hash + salt),
+  hash: (hash + salt),
   email: string,
   followers: [Array of userIDs],
   following: [Array of userIDs],
