@@ -114,18 +114,10 @@ app.post("/users/in", function (req, res) {
  */
 app.post("/users/out", function (req, res) {
     // Check that entered username is in database.
-    sucessDelete = db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken});
-        if (!sucessDelete["acknowledged"]){
-            // If entered username or password are incorrect
-            returnArray = {"valid": false};
-            res.status(201).json(returnArray);
-        }
-        else {
-            // If entered username or password are incorrect
-            returnArray = {"valid": true};
-            res.status(201).json(returnArray);
+    db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
 
-        }
+            res.status(201).json(docs);
+
     });
 });
 
