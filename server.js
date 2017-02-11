@@ -55,13 +55,13 @@ app.post("/users/in", function (req, res) {
     db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (err){
             // If entered username or password are incorrect
-            returnArray = {"sessionToken": "0000", "valid": false};
+            returnArray = {"token": "0000", "valid": false};
             res.status(201).json(returnArray);
 
         }
         else if (docs.length == 0){
             // If entered username or password are incorrect
-            returnArray = {"sessionToken": "0000", "valid": false};
+            returnArray = {"token": "0000", "valid": false};
             res.status(201).json(returnArray);
 
         }
@@ -93,16 +93,10 @@ app.post("/users/in", function (req, res) {
                 function (err, doc) {
                     if (err) {
                     } else {
-                        returnArray = {"sessionToken": sessionTokenResult, "valid": true};
+                        returnArray = {"token": sessionTokenResult, "valid": true};
                         res.status(201).json(returnArray);
                     }
                 });
-        }
-        else {
-            // If entered username or password are incorrect
-            returnArray = {"sessionToken": "0000", "valid": false};
-            res.status(201).json(returnArray);
-
         }
     });
 });
@@ -167,7 +161,7 @@ app.post("/users", function (req, res) {
                                 function (err, doc) {
                                     if (err) {
                                     } else {
-                                        returnArray = {"sessionToken": sessionTokenResult, "valid": true};
+                                        returnArray = {"token": sessionTokenResult, "valid": true};
                                         res.status(201).json(returnArray);
                                     }
                                 });
@@ -177,7 +171,7 @@ app.post("/users", function (req, res) {
             }
             else {
                 // If entered username already exists:
-                returnArray = {"sessionToken": "0000", "valid": false};
+                returnArray = {"token": "0000", "valid": false};
                 res.status(201).json(returnArray);
             }
         }
