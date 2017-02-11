@@ -53,7 +53,13 @@ app.post("/users/in", function (req, res) {
 
     // Check that entered username is in database.
     var user_exists = db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
-        if (req.body.hash == docs[0].hash) {
+        if (err) {
+            // If entered username or password are incorrect
+            returnArray = {"sessionToken": "0000", "valid": false};
+            res.status(201).json(returnArray);
+
+        }
+        else if (req.body.hash == docs[0].hash) {
             newToken = true;
             do
             {
@@ -85,12 +91,6 @@ app.post("/users/in", function (req, res) {
                         res.status(201).json(returnArray);
                     }
                 });
-        }
-        else if (err){
-            // If entered username or password are incorrect
-            returnArray = {"sessionToken": "0000", "valid": false};
-            res.status(201).json(returnArray);
-
         }
         else {
             // If entered username or password are incorrect
