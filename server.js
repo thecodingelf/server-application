@@ -85,7 +85,14 @@ app.post("/users/in", function (req, res) {
                         res.status(201).json(returnArray);
                     }
                 });
-        } else {
+        }
+        else if (err){
+            // If entered username or password are incorrect
+            returnArray = {"sessionToken": "0000", "valid": false};
+            res.status(201).json(returnArray);
+
+        }
+        else {
             // If entered username or password are incorrect
             returnArray = {"sessionToken": "0000", "valid": false};
             res.status(201).json(returnArray);
@@ -125,7 +132,7 @@ app.post("/users", function (req, res) {
                     },
                     function (err, doc) {
                         if (err) {
-                            handleError(res, err.message, "Failed to create new contact.");
+                            handleError(res, err.message, "Failed to create new user.");
                         } else {
                             newToken = true;
                             do
