@@ -52,8 +52,8 @@ function handleError(res, reason, message, code) {
 app.post("/users/in", function (req, res) {
 
     // Check that entered username is in database.
-    var user_exists = db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
-        if (err) {
+    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+        if (err){
             // If entered username or password are incorrect
             returnArray = {"sessionToken": "0000", "valid": false};
             res.status(201).json(returnArray);
