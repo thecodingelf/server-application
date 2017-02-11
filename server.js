@@ -54,8 +54,22 @@ app.post("/users/in", function (req, res) {
     // Check that entered username is in database.
     var user_exists = db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (req.body.hash == docs[0].hash) {
+            sessionTokenResult = "sgsdgsdsgsdgds";
 
-                        res.status(201).json(docs[0].hash);
+            /*
+             If user has been added to the DB, add the generated session token to the database.
+             */
+            db.collection(SESSIONS_COLLECTION).insertOne({
+                    username: req.body.username,
+                    sessionToken: sessionTokenResult
+                },
+                function (err, doc) {
+                    if (err) {
+                    } else {
+                        returnArray = {"sessionToken": sessionTokenResult, "valid": true};
+                        res.status(201).json(returnArray);
+                    }
+                });
         } else {
             // If entered username or password are incorrect
             returnArray = {"sessionToken": "0000", "valid": false};
