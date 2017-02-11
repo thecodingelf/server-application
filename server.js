@@ -50,48 +50,8 @@ function handleError(res, reason, message, code) {
  and "0000" as a security token if the entry is not found. (see README.md)
  */
 app.post("/users/in", function (req, res) {
+    res.status(201).json(req);
 
-    // Check that entered username is in database.
-    var user_exists = db.collection(USERS_COLLECTION).findOne({username: req.body.username}).toArray(function (err, docs) {
-        if (req.body.hash == docs.hash) {
-            newToken = true;
-            do
-            {
-                /* Generate session token */
-                sessionTokenResult = guid();
-                /* Check that the token generated does not yet exist in the DB */
-                db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
-                    if (err) {
-                    } else {
-                        if (docs.length != 0) {
-                            newToken = false;
-                        }
-                    }
-                });
-            }
-            while (!newToken);
-
-            /*
-             If user has been added to the DB, add the generated session token to the database.
-             */
-            db.collection(SESSIONS_COLLECTION).insertOne({
-                    username: req.body.username,
-                    sessionToken: sessionTokenResult
-                },
-                function (err, doc) {
-                    if (err) {
-                    } else {
-                        returnArray = {"sessionToken": sessionTokenResult, "valid": true};
-                        res.status(201).json(returnArray);
-                    }
-                });
-        } else {
-            // If entered username or password are incorrect
-            returnArray = {"sessionToken": "0000", "valid": false};
-            res.status(201).json(returnArray);
-
-        }
-    });
 });
 
 /*
