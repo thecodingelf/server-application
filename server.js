@@ -278,7 +278,14 @@ app.put("/users/profilepicture", function (req, res) {
  Follow or unfollow specified user, using sessionToken
  */
 app.post("/users/follow", function (req, res) {
-
+    // Get user to be followed
+    var userToFollow = db.collection(USERS_COLLECTION).findOne({username: req.body.usernameToFollow});
+    // Get the current username
+    var currentUsername = db.collection(SESSIONS_COLLECTION).findOne({username: req.body.sessionToken});
+    // Get the current user
+    var currentUser = db.collection(USERS_COLLECTION).findOne({username: currentUsername.username});
+    var returnArray = [userToFollow, currentUsername, currentUser];
+    res.status(201).json(returnArray);
 });
 
 /*
