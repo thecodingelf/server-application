@@ -114,11 +114,9 @@ app.post("/users/in", function (req, res) {
  */
 app.post("/users/out", function (req, res) {
     // Check that entered username is in database.
-    db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
-
-            res.status(201).json(docs);
-
-    });
+    returnArray = {"valid": true};
+    returnArrayFalse = {"valid": false};
+    (db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}) && res.status(201).json(returnArray)) || res.status(201).json(returnArrayFalse);
 });
 
 /*
