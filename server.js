@@ -120,11 +120,6 @@ app.post("/users/out", function (req, res) {
             returnArray = {"valid": false};
             res.status(201).json(returnArray);
         }
-        else if (docs.length == 0){
-            // If entered username or password are incorrect
-            returnArray = {"valid": false};
-            res.status(201).json(returnArray);
-        }
         else {
             // If entered username or password are incorrect
             returnArray = {"valid": true};
