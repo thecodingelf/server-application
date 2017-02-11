@@ -59,6 +59,12 @@ app.post("/users/in", function (req, res) {
             res.status(201).json(returnArray);
 
         }
+        else if (docs.length == 0){
+            // If entered username or password are incorrect
+            returnArray = {"sessionToken": "0000", "valid": false};
+            res.status(201).json(returnArray);
+
+        }
         else if (req.body.hash == docs[0].hash) {
             newToken = true;
             do
