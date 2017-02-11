@@ -52,6 +52,7 @@ function handleError(res, reason, message, code) {
 app.post("/users/in", function (req, res) {
 
     // Check that entered username is in database.
+    // ToDo Check that it does not use RegEXP and searches for exact username entered
     db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (err){
             // If entered username or password are incorrect
@@ -97,6 +98,12 @@ app.post("/users/in", function (req, res) {
                         res.status(201).json(returnArray);
                     }
                 });
+        }
+        else {
+            // If entered username or password are incorrect
+            returnArray = {"token": "0000", "valid": false};
+            res.status(201).json(returnArray);
+
         }
     });
 });
