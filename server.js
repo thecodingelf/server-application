@@ -54,7 +54,22 @@ app.post("/users/in", function (req, res) {
     // Check that entered username is in database.
     var user_exists = db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
         if (req.body.hash == docs[0].hash) {
-            sessionTokenResult = "sgsdgsdsgsdgds";
+            newToken = true;
+            do
+            {
+                /* Generate session token */
+                sessionTokenResult = guid();
+                /* Check that the token generated does not yet exist in the DB */
+                db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
+                    if (err) {
+                    } else {
+                        if (docs.length != 0) {
+                            newToken = false;
+                        }
+                    }
+                });
+            }
+            while (!newToken);
 
             /*
              If user has been added to the DB, add the generated session token to the database.
