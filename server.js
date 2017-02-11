@@ -52,9 +52,11 @@ function handleError(res, reason, message, code) {
 app.post("/users/in", function (req, res) {
 
     // Check that entered username is in database.
-    var user_exists = db.collection(USERS_COLLECTION).findOne({username: req.body.username}).toArray(function (err, docs) {
-        if (req.body.hash == docs.hash) {
-
+    var user_exists = db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+        if (req.body.hash == docs[0].hash) {
+            newToken = true;
+            do
+            {
                 /* Generate session token */
                 sessionTokenResult = guid();
                 /* Check that the token generated does not yet exist in the DB */
@@ -66,7 +68,8 @@ app.post("/users/in", function (req, res) {
                         }
                     }
                 });
-
+            }
+            while (!newToken);
 
             /*
              If user has been added to the DB, add the generated session token to the database.
