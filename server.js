@@ -33,7 +33,7 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
    });
 });
 
-// CONTACTS API ROUTES BELOW
+// API ROUTES BELOW
 
 // Generic error handler used by all endpoints.
 function handleError(res, reason, message, code) {
