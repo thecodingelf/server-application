@@ -278,7 +278,17 @@ app.put("/users/profilepicture", function (req, res) {
 app.post("/users/follow", function (req, res) {
    //Find followers of the user to follow
    usernameToFollow = req.body.usernameToFollow;
-   res.status(201).json(usernameToFollow);
+   db.collection(USERS_COLLECTION).find({username: usernameToFollow}).toArray(function (err, docs) {
+      if (err) {
+         returnArray = {"success": false};
+         res.status(201).json(returnArray);
+      } else {
+         // Store followers usernames of the user to follow
+         userToFollowFollowers = docs[0].followers;
+         returnArray = {"userToFollowFollowers": userToFollowFollowers, "usernameToFollow": usernameToFollow };
+         res.status(201).json(returnArray);
+      }
+   });
 });
 
 /*
