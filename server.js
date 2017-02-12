@@ -293,11 +293,11 @@ app.post("/users/follow", function (req, res) {
             } else {
                currentUserUsername = docs[0].username;
                currentUserFollowing = docs[0].following;
+               console.log(usernameToFollow);
                indexOfUsernameInFollowers = userToFollowFollowers.indexOf(currentUserUsername);
                // If user is already being followed - unfollow
                if (indexOfUsernameInFollowers !== -1) {
                   console.log(indexOfUsernameInFollowers);
-                  console.log(currentUserFollowing.indexOf(usernameToFollow));
                   /*
                   userToFollowFollowers.splice(indexOfUsernameInFollowers, 1);
                   currentUserFollowing.splice(currentUserFollowing.indexOf(usernameToFollow), 1);
