@@ -293,10 +293,12 @@ app.post("/users/follow", function (req, res) {
             } else {
                currentUserUsername = docs[0].username;
                currentUserFollowing = docs[0].following;
-               currentUserFollowing.push(usernameToFollow);
-               userToFollowFollowers.push(currentUserUsername);
-               returnArray = {"success": currentUserFollowing, "second": userToFollowFollowers};
-               res.status(201).json(returnArray);
+                  currentUserFollowing.push(usernameToFollow);
+                  userToFollowFollowers.push(currentUserUsername);
+                  db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {followers: userToFollowFollowers});
+                  db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {following: currentUserFollowing});
+                  returnArray = {"success": true};
+                  res.status(201).json(returnArray);
             }
          });
       }
