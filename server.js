@@ -280,7 +280,7 @@ app.post("/users/follow", function (req, res) {
    usernameToFollow = req.body.usernameToFollow;
    db.collection(USERS_COLLECTION).find({username: usernameToFollow}).toArray(function (err, docs) {
       if (err) {
-         returnArray = {"success": false};
+         returnArray = {"valid": false};
          res.status(201).json(returnArray);
       } else {
          // Store followers usernames of the user to follow
@@ -288,7 +288,7 @@ app.post("/users/follow", function (req, res) {
          // Find username of the current user.
          db.collection(SESSIONS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
             if (err) {
-               returnArray = {"success": false};
+               returnArray = {"valid": false};
                res.status(201).json(returnArray);
             } else {
                currentUserUsername = docs[0].username;
@@ -297,14 +297,14 @@ app.post("/users/follow", function (req, res) {
                if (indexOfUsernameInFollowers !== -1) {
                   db.collection(USERS_COLLECTION).find({username: currentUserUsername}).toArray(function (err, docs) {
                      if (err) {
-                        returnArray = {"success": false};
+                        returnArray = {"valid": false};
                         res.status(201).json(returnArray);
                      } else {
                         // Delete the person being followed from following array of the current user
                         currentUserFollowing = docs[0]["following"];
                         currentUserFollowing.splice(currentUserFollowing.indexOf(usernameToFollow), 1);
                         db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
-                        returnArray = {"success": true};
+                        returnArray = {"valid": true};
                         res.status(201).json(returnArray);
                      }
                   });
@@ -327,7 +327,7 @@ app.post("/users/follow", function (req, res) {
                   userToFollowFollowers.push(currentUserUsername);
                   db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
                   db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
-                  returnArray = {"success": true};
+                  returnArray = {"valid": true};
                   res.status(201).json(returnArray);
                }
             }
