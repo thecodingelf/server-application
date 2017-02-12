@@ -308,18 +308,21 @@ app.post("/users/follow", function (req, res) {
                         res.status(201).json(returnArray);
                      }
                   });
-                  // Delete current user from followers c
+                  // Delete current user from followers of the user followed.
                   userToFollowFollowers.splice(indexOfUsernameInFollowers, 1);
                   db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
                }
                // If user is not yet being followed - follow
                else {
+                  // If array of users following is empty - create array.
                   if (currentUserFollowing == undefined) {
                      currentUserFollowing = [];
                   }
+                  // If array of followers is empty - create array.
                   if (currentUserFollowing == undefined) {
                      userToFollowFollowers = [];
                   }
+                  // Push users to respective arrays and update DB data.
                   currentUserFollowing.push(usernameToFollow);
                   userToFollowFollowers.push(currentUserUsername);
                   db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
