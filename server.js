@@ -307,12 +307,13 @@ app.post("/users/follow", function (req, res) {
                }
                // If user is not yet being followed - follow
                else {
-                  if(currentUserFollowing == undefined){ currentUserFollowing = new Array() }
-                  if(currentUserFollowing == undefined){ userToFollowFollowers = new Array() }
+                  if(currentUserFollowing == undefined){ currentUserFollowing = []; }
+                  if(currentUserFollowing == undefined){ userToFollowFollowers = []; }
                   currentUserFollowing.push(usernameToFollow);
                   userToFollowFollowers.push(currentUserUsername);
-                  db.collection(USERS_COLLECTION).update({$set: {username: usernameToFollow, followers: userToFollowFollowers}});
-                  db.collection(USERS_COLLECTION).update({$set: {username: currentUserUsername, following: currentUserFollowing}});
+                  console.log(userToFollowFollowers);console.log(currentUserFollowing);
+                  db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
+                  db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
                   returnArray = {"success": true};
                   res.status(201).json(returnArray);
                }
