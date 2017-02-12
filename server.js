@@ -276,7 +276,7 @@ app.put("/users/profilepicture", function (req, res) {
  Follow or unfollow specified user, using sessionToken
  */
 app.post("/users/follow", function (req, res) {
-   db.collection(USERS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
+   db.collection(SESSIONS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
       if (err) {
       } else {
          res.status(201).json(docs);
