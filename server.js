@@ -293,6 +293,7 @@ app.post("/users/follow", function (req, res) {
             } else {
                currentUserUsername = docs[0].username;
                currentUserFollowing = docs[0].following;
+               console.log(currentUserFollowing);console.log(currentUserUsername);
                returnArray = {
                   "currentUserFollowing": currentUserFollowing,
                   "userToFollowFollowers": currentUserUsername
