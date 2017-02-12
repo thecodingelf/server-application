@@ -293,15 +293,29 @@ app.post("/users/follow", function (req, res) {
             } else {
                currentUserUsername = docs[0].username;
                currentUserFollowing = docs[0].following;
-               if(currentUserFollowing == undefined){ currentUserFollowing = new Array() }
-               if(currentUserFollowing == undefined){ userToFollowFollowers = new Array() }
-               console.log(currentUserFollowing);console.log(userToFollowFollowers);
+               alreadyFollowing = false;
+               userToFollowFollowers.forEach(function (followerUsername) {
+                  if (followerUsername == currentUserUsername) {
+                     alreadyFollowing = true;
+                  }
+               });
+               // If user is already being followed - unfollow
+               if (alreadyFollowing) {
+                  db.collection(USERS_COLLECTION).update({username: usernameToFollow}, update, options);
+                  returnArray = {"success": true};
+                  res.status(201).json(returnArray);
+               }
+               // If user is not yet being followed - follow
+               else {
+                  if(currentUserFollowing == undefined){ currentUserFollowing = new Array() }
+                  if(currentUserFollowing == undefined){ userToFollowFollowers = new Array() }
                   currentUserFollowing.push(usernameToFollow);
                   userToFollowFollowers.push(currentUserUsername);
-                  db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {followers: userToFollowFollowers});
-                  db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {following: currentUserFollowing});
-                  returnArray = {"currentUserFollowing": currentUserFollowing, "userToFollowFollowers": userToFollowFollowers};
+                  db.collection(USERS_COLLECTION).update({$set: {username: usernameToFollow, followers: userToFollowFollowers}});
+                  db.collection(USERS_COLLECTION).update({$set: {username: currentUserUsername, following: currentUserFollowing}});
+                  returnArray = {"success": true};
                   res.status(201).json(returnArray);
+               }
             }
          });
       }
