@@ -280,6 +280,7 @@ app.post("/users/follow", function (req, res) {
       if (err) {
       } else {
          idCurrentUser = docs[0]["_id"];
+         returnArray = {"currentUser": idCurrentUser};
          res.status(201).json(idCurrentUser);
       }
    });
