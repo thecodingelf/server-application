@@ -278,7 +278,7 @@ app.put("/users/profilepicture", function (req, res) {
 app.post("/users/follow", function (req, res) {
    //Find followers of the user to follow
    usernameToFollow = req.body.usernameToFollow;
-   res.status(201).json(returnArray);
+   res.status(201).json(usernameToFollow);
 });
 
 /*
