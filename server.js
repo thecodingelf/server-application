@@ -293,9 +293,27 @@ app.post("/users/follow", function (req, res) {
             } else {
                currentUserUsername = docs[0].username;
                currentUserFollowing = docs[0].following;
-               returnArray = {"userToFollowFollowers": userToFollowFollowers, "usernameToFollow": usernameToFollow,
-               "currentUserUsername": currentUserUsername, "currentUserFollowing": currentUserFollowing};
-               res.status(201).json(returnArray);
+               alreadyFollowing = false;
+               userToFollowFollowers.forEach(function (followerUsername) {
+                  if (followerUsername == currentUserUsername) {
+                     alreadyFollowing = true;
+                  }
+               });
+               // If user is already being followed - unfollow
+               if (alreadyFollowing) {
+                  db.collection.update({username: usernameToFollow}, update, options);
+                  returnArray = {"success": true};
+                  res.status(201).json(returnArray);
+               }
+               // If user is not yet being followed - follow
+               else {
+                  currentUserFollowing.push(usernameToFollow);
+                  userToFollowFollowers.push(currentUserUsername);
+                  db.collection.update({username: usernameToFollow}, {followers: userToFollowFollowers});
+                  db.collection.update({username: currentUserUsername}, {following: currentUserFollowing});
+                  returnArray = {"success": true};
+                  res.status(201).json(returnArray);
+               }
             }
          });
       }
