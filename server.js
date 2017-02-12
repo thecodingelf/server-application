@@ -293,15 +293,13 @@ app.post("/users/follow", function (req, res) {
             } else {
                currentUserUsername = docs[0].username;
                currentUserFollowing = docs[0].following;
-               alreadyFollowing = false;
-               userToFollowFollowers.forEach(function (followerUsername) {
-                  if (followerUsername == currentUserUsername) {
-                     alreadyFollowing = true;
-                  }
-               });
-               console.log(alreadyFollowing);
+               indexOfUsernameInFollowers = userToFollowFollowers.indexOf(currentUserUsername);
                // If user is already being followed - unfollow
-               if ((userToFollowFollowers.indexOf(currentUserUsername) !== -1)) {
+               if (indexOfUsernameInFollowers !== -1) {
+                  userToFollowFollowers.splice(indexOfUsernameInFollowers, 1);
+                  currentUserFollowing.splice(currentUserFollowing.indexOf(usernameToFollow), 1);
+                  db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
+                  db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
                   console.log("Repetition");
                   returnArray = {"success": true};
                   res.status(201).json(returnArray);
