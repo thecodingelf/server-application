@@ -276,12 +276,42 @@ app.put("/users/profilepicture", function (req, res) {
  Follow or unfollow specified user, using sessionToken
  */
 app.post("/users/follow", function (req, res) {
-   db.collection(SESSIONS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
+   //Find followers of the user to follow
+   usernameToFollow = req.body.usernameToFollow;
+   db.collection(USERS_COLLECTION).find({username: usernameToFollow}).toArray(function (err, docs) {
       if (err) {
-      } else {
-         idCurrentUser = docs[0]["_id"];
-         returnArray = {"currentUser": idCurrentUser};
+         returnArray = {"success": false};
          res.status(201).json(returnArray);
+      } else {
+         // Store followers usernames of the user to follow
+         userToFollowFollowers = docs[0].followers;
+         // Find username of the current user.
+         db.collection(SESSIONS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
+            if (err) {
+               returnArray = {"success": false};
+               res.status(201).json(returnArray);
+            } else {
+               currentUserUsername = docs[0].username;
+               currentUserFollowing = docs[0].following;
+               userToFollowFollowers.forEach(function (followerUsername) {
+                  // If user is already being followed - unfollow
+                  if (followerUsername == currentUserUsername) {
+                     db.collection.update({username: usernameToFollow}, update, options);
+                     returnArray = {"success": true};
+                     res.status(201).json(returnArray);
+                  }
+                  // If user is not yet being followed - follow
+                  else {
+                     currentUserFollowing.push(usernameToFollow);
+                     userToFollowFollowers.push(currentUserUsername);
+                     db.collection.update({username: usernameToFollow}, {followers: userToFollowFollowers});
+                     db.collection.update({username: currentUserUsername}, {following: currentUserFollowing});
+                     returnArray = {"success": true};
+                     res.status(201).json(returnArray);
+                  }
+               });
+            }
+         });
       }
    });
 });
