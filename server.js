@@ -17,30 +17,29 @@ var db;
 
 // Connect to the database before starting the application server.
 mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
-    if (err) {
-        console.log(err);
-        process.exit(1);
-    }
+   if (err) {
+      console.log(err);
+      process.exit(1);
+   }
 
-    // Save database object from the callback for reuse.
-    db = database;
-    console.log("Database connection ready");
+   // Save database object from the callback for reuse.
+   db = database;
+   console.log("Database connection ready");
 
-    // Initialize the app.
-    var server = app.listen(process.env.PORT || 8080, function () {
-        var port = server.address().port;
-        console.log("App now running on port", port);
-    });
+   // Initialize the app.
+   var server = app.listen(process.env.PORT || 8080, function () {
+      var port = server.address().port;
+      console.log("App now running on port", port);
+   });
 });
 
 // CONTACTS API ROUTES BELOW
 
 // Generic error handler used by all endpoints.
 function handleError(res, reason, message, code) {
-    console.log("ERROR: " + reason);
-    res.status(code || 500).json({"error": message});
+   console.log("ERROR: " + reason);
+   res.status(code || 500).json({"error": message});
 }
-
 
 
 /*
@@ -53,60 +52,61 @@ function handleError(res, reason, message, code) {
  */
 app.post("/users/in", function (req, res) {
 
-    // Check that entered username is in database.
-    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
-        if (err){
-            // In case of an error. (username not found)
-            returnArray = {"token": "0000", "valid": false};
-            res.status(201).json(returnArray);
+   // Check that entered username is in database.
+   db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+      // In case of an error. (username not found)
+      if (err) {
+         returnArray = {"token": "0000", "valid": false};
+         res.status(201).json(returnArray);
 
-        }
-        else if (docs.length == 0){
-            // If entered username or password are incorrect
-            returnArray = {"token": "0000", "valid": false};
-            res.status(201).json(returnArray);
+      }
+      // If entered username or password are incorrect
+      else if (docs.length == 0) {
+         returnArray = {"token": "0000", "valid": false};
+         res.status(201).json(returnArray);
 
-        }
-        else if (req.body.hash == docs[0].hash) {
-            newToken = true;
-            do
-            {
-                /* Generate session token */
-                sessionTokenResult = guid();
-                /* Check that the token generated does not yet exist in the DB */
-                db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
-                    if (err) {
-                    } else {
-                        if (docs.length != 0) {
-                            newToken = false;
-                        }
-                    }
-                });
-            }
-            while (!newToken);
+      }
+      // If entered username exists and password is correct
+      else if (req.body.hash == docs[0].hash) {
+         newToken = true;
+         do
+         {
+            /* Generate session token */
+            sessionTokenResult = guid();
+            /* Check that the token generated does not yet exist in the DB */
+            db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
+               if (err) {
+               } else {
+                  if (docs.length != 0) {
+                     newToken = false;
+                  }
+               }
+            });
+         }
+         while (!newToken);
 
-            /*
-             If user has been added to the DB, add the generated session token to the database.
-             */
-            db.collection(SESSIONS_COLLECTION).insertOne({
-                    username: req.body.username,
-                    sessionToken: sessionTokenResult
-                },
-                function (err, doc) {
-                    if (err) {
-                    } else {
-                        returnArray = {"token": sessionTokenResult, "valid": true};
-                        res.status(201).json(returnArray);
-                    }
-                });
-        }
-        else {
-            // If entered username or password are incorrect
-            returnArray = {"token": "0000", "valid": false};
-            res.status(201).json(returnArray);
+         /*
+          If user has been added to the DB, add the generated session token to the database.
+          */
+         db.collection(SESSIONS_COLLECTION).insertOne({
+               username: req.body.username,
+               sessionToken: sessionTokenResult
+            },
+            function (err, doc) {
+               if (err) {
+               } else {
+                  returnArray = {"token": sessionTokenResult, "valid": true};
+                  res.status(201).json(returnArray);
+               }
+            });
+      }
+      // If entered username or password are incorrect
+      else {
+         returnArray = {"token": "0000", "valid": false};
+         res.status(201).json(returnArray);
 
-        }
-    });
+      }
+   });
 });
 
 /*
@@ -115,9 +115,8 @@ app.post("/users/in", function (req, res) {
  collection (see README.md)
  */
 app.post("/users/out", function (req, res) {
-    // Check that entered username is in database.
-    returnArray = {"valid": true};
-    db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}) && res.status(201).json(returnArray);
+   returnArray = {"valid": true};
+   db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}) && res.status(201).json(returnArray);
 });
 
 /*
@@ -129,69 +128,68 @@ app.post("/users/out", function (req, res) {
  */
 app.post("/users", function (req, res) {
 
-    // Check that entered username is not in database.
-    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
-        if (err) {
-        } else {
-            if (docs.length == 0) {
-                /* Add new user to DB */
-                db.collection(USERS_COLLECTION).insertOne({
-                        username: req.body.username,
-                        hash: req.body.hash,
-                        email: req.body.email,
-                        followers: [],
-                        following: [],
-                        photos: [],
-                        profilePicture: "img/placeholder.jpg"
-                    },
-                    function (err, doc) {
-                        if (err) {
-                            handleError(res, err.message, "Failed to create new user.");
-                        } else {
-                            newToken = true;
-                            do
-                            {
-                                /* Generate session token */
-                                sessionTokenResult = guid();
-                                /* Check that the token generated does not yet exist in the DB */
-                                db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
-                                    if (err) {
-                                    } else {
-                                        if (docs.length != 0) {
-                                            newToken = false;
-                                        }
-                                    }
-                                });
-                            }
-                            while (!newToken);
+   // Check that entered username is not in database.
+   db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+      if (err) {
+      } else {
+         if (docs.length == 0) {
+            /* Add new user to DB */
+            db.collection(USERS_COLLECTION).insertOne({
+                  username: req.body.username,
+                  hash: req.body.hash,
+                  email: req.body.email,
+                  followers: [],
+                  following: [],
+                  photos: [],
+                  profilePicture: "img/placeholder.jpg"
+               },
+               function (err, doc) {
+                  if (err) {
+                     handleError(res, err.message, "Failed to create new user.");
+                  } else {
+                     newToken = true;
+                     do
+                     {
+                        /* Generate session token */
+                        sessionTokenResult = guid();
+                        /* Check that the token generated does not yet exist in the DB */
+                        db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
+                           if (err) {
+                           } else {
+                              if (docs.length != 0) {
+                                 newToken = false;
+                              }
+                           }
+                        });
+                     }
+                     while (!newToken);
 
-                            /*
-                             If user has been added to the DB, add the generated session token to the database.
-                             */
-                            db.collection(SESSIONS_COLLECTION).insertOne({
-                                    username: req.body.username,
-                                    sessionToken: sessionTokenResult
-                                },
-                                function (err, doc) {
-                                    if (err) {
-                                    } else {
-                                        returnArray = {"token": sessionTokenResult, "valid": true};
-                                        res.status(201).json(returnArray);
-                                    }
-                                });
-                        }
-                    }
-                );
-            }
-            else {
-                // If entered username already exists:
-                returnArray = {"token": "0000", "valid": false};
-                res.status(201).json(returnArray);
-            }
-        }
-    });
+                     /*
+                      If user has been added to the DB, add the generated session token to the database.
+                      */
+                     db.collection(SESSIONS_COLLECTION).insertOne({
+                           username: req.body.username,
+                           sessionToken: sessionTokenResult
+                        },
+                        function (err, doc) {
+                           if (err) {
+                           } else {
+                              returnArray = {"token": sessionTokenResult, "valid": true};
+                              res.status(201).json(returnArray);
+                           }
+                        });
+                  }
+               }
+            );
+         }
+         else {
+            // If entered username already exists:
+            returnArray = {"token": "0000", "valid": false};
+            res.status(201).json(returnArray);
+         }
+      }
+   });
 });
-
 
 
 /*
@@ -278,7 +276,13 @@ app.put("/users/profilepicture", function (req, res) {
  Follow or unfollow specified user, using sessionToken
  */
 app.post("/users/follow", function (req, res) {
-
+   db.collection(USERS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
+      if (err) {
+      } else {
+         idCurrentUser = docs[0]["_id"];
+         res.status(201).json(idCurrentUser);
+      }
+   });
 });
 
 /*
@@ -295,12 +299,12 @@ app.get("/photos/:id", function (req, res) {
 
 /* Random Token Generation */
 function guid() {
-    return s4() + s4() + s4() + s4() +
-        s4() + s4() + s4() + s4() + s4() + s4() + s4();
+   return s4() + s4() + s4() + s4() +
+      s4() + s4() + s4() + s4() + s4() + s4() + s4();
 }
 
 function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
+   return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
 }
