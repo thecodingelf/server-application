@@ -285,8 +285,19 @@ app.post("/users/follow", function (req, res) {
       } else {
          // Store followers usernames of the user to follow
          userToFollowFollowers = docs[0].followers;
-         returnArray = {"userToFollowFollowers": userToFollowFollowers, "usernameToFollow": usernameToFollow };
-         res.status(201).json(returnArray);
+         // Find username of the current user.
+         db.collection(SESSIONS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
+            if (err) {
+               returnArray = {"success": false};
+               res.status(201).json(returnArray);
+            } else {
+               currentUserUsername = docs[0].username;
+               currentUserFollowing = docs[0].following;
+               returnArray = {"userToFollowFollowers": userToFollowFollowers, "usernameToFollow": usernameToFollow,
+               "currentUserUsername": currentUserUsername, "currentUserFollowing": currentUserFollowing};
+               res.status(201).json(returnArray);
+            }
+         });
       }
    });
 });
