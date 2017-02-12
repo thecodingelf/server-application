@@ -301,12 +301,14 @@ app.post("/users/follow", function (req, res) {
                });
                console.log(alreadyFollowing);
                // If user is already being followed - unfollow
-               if (alreadyFollowing) {
+               if ((userToFollowFollowers.indexOf(currentUserUsername) !== -1)) {
+                  console.log("Repetition");
                   returnArray = {"success": true};
                   res.status(201).json(returnArray);
                }
                // If user is not yet being followed - follow
                else {
+                  console.log("No Repetition");
                   if(currentUserFollowing == undefined){ currentUserFollowing = []; }
                   if(currentUserFollowing == undefined){ userToFollowFollowers = []; }
                   currentUserFollowing.push(usernameToFollow);
