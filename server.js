@@ -279,7 +279,9 @@ app.post("/users/follow", function (req, res) {
    db.collection(SESSIONS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
       if (err) {
       } else {
-         res.status(201).json(docs);
+         idCurrentUser = docs[0]["_id"];
+         returnArray = {"currentUser": idCurrentUser};
+         res.status(201).json(returnArray);
       }
    });
 });
