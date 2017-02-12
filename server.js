@@ -299,9 +299,9 @@ app.post("/users/follow", function (req, res) {
                      alreadyFollowing = true;
                   }
                });
+               console.log(alreadyFollowing);
                // If user is already being followed - unfollow
                if (alreadyFollowing) {
-                  db.collection(USERS_COLLECTION).update({username: usernameToFollow}, update, options);
                   returnArray = {"success": true};
                   res.status(201).json(returnArray);
                }
