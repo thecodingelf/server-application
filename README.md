@@ -141,7 +141,7 @@ __Client-side:__
    }
    ```
 
-P.S. The resulting array is not filtered by datetime - load on the client.
+   P.S. The resulting array is not filtered by datetime - load on the client.
 
   *  POST /photos/like
 
@@ -163,7 +163,7 @@ P.S. The resulting array is not filtered by datetime - load on the client.
      Result:
      ```
      {
-      success: boolean
+      valid: boolean
      }
      ```
 4. __Profile__
@@ -222,7 +222,7 @@ P.S. The resulting array is not filtered by datetime - load on the client.
      Result:
      ```
      {
-      success: boolean
+      valid: boolean
      }
      ```
 
@@ -246,7 +246,7 @@ P.S. The resulting array is not filtered by datetime - load on the client.
      Result:
      ```
      {
-      success: boolean
+      valid: boolean
      }
      ```
 
@@ -395,7 +395,7 @@ P.S. The resulting array is not filtered by datetime - load on the client.
 
     ```
     {
-     boolean: true
+     valid: true
     }
     ```
 
