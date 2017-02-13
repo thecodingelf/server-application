@@ -294,42 +294,42 @@ app.post("/users/follow", function (req, res) {
                currentUserUsername = docs[0].username;
                indexOfUsernameInFollowers = userToFollowFollowers.indexOf(currentUserUsername);
                // If user is already being followed - unfollow
-               if (indexOfUsernameInFollowers !== -1) {
-                  db.collection(USERS_COLLECTION).find({username: currentUserUsername}).toArray(function (err, docs) {
-                     if (err) {
-                        returnArray = {"valid": false};
-                        res.status(201).json(returnArray);
-                     } else {
+               db.collection(USERS_COLLECTION).find({username: currentUserUsername}).toArray(function (err, docs) {
+                  if (err) {
+                     returnArray = {"valid": false};
+                     res.status(201).json(returnArray);
+                  } else {
+                     if (indexOfUsernameInFollowers !== -1) {
                         // Delete the person being followed from following array of the current user
                         currentUserFollowing = docs[0]["following"];
                         currentUserFollowing.splice(currentUserFollowing.indexOf(usernameToFollow), 1);
                         db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
                         returnArray = {"valid": true};
                         res.status(201).json(returnArray);
+                        // Delete current user from followers of the user followed.
+                        userToFollowFollowers.splice(indexOfUsernameInFollowers, 1);
+                        db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
                      }
-                  });
-                  // Delete current user from followers of the user followed.
-                  userToFollowFollowers.splice(indexOfUsernameInFollowers, 1);
-                  db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
-               }
-               // If user is not yet being followed - follow
-               else {
-                  // If array of users following is empty - create array.
-                  if (currentUserFollowing == undefined) {
-                     currentUserFollowing = [];
+                     // If user is not yet being followed - follow
+                     else {
+                        // If array of users following is empty - create array.
+                        if (currentUserFollowing == undefined) {
+                           currentUserFollowing = [];
+                        }
+                        // If array of followers is empty - create array.
+                        if (currentUserFollowing == undefined) {
+                           userToFollowFollowers = [];
+                        }
+                        // Push users to respective arrays and update DB data.
+                        currentUserFollowing.push(usernameToFollow);
+                        userToFollowFollowers.push(currentUserUsername);
+                        db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
+                        db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
+                        returnArray = {"valid": true};
+                        res.status(201).json(returnArray);
+                     }
                   }
-                  // If array of followers is empty - create array.
-                  if (currentUserFollowing == undefined) {
-                     userToFollowFollowers = [];
-                  }
-                  // Push users to respective arrays and update DB data.
-                  currentUserFollowing.push(usernameToFollow);
-                  userToFollowFollowers.push(currentUserUsername);
-                  db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
-                  db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
-                  returnArray = {"valid": true};
-                  res.status(201).json(returnArray);
-               }
+               });
             }
          });
       }
