@@ -167,7 +167,7 @@ __Client-side:__
      }
      ```
 4. __Profile__
-  *  GET /users/:id
+  *  GET /users/profile/:id
 
      Description:
      Get the profile of the user.
