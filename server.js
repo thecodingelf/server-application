@@ -293,15 +293,15 @@ app.post("/users/follow", function (req, res) {
             } else {
                currentUserUsername = docs[0].username;
                indexOfUsernameInFollowers = userToFollowFollowers.indexOf(currentUserUsername);
-               // If user is already being followed - unfollow
                db.collection(USERS_COLLECTION).find({username: currentUserUsername}).toArray(function (err, docs) {
                   if (err) {
                      returnArray = {"valid": false};
                      res.status(201).json(returnArray);
                   } else {
+                     currentUserFollowing = docs[0]["following"];
+                     // If user is already being followed - unfollow
                      if (indexOfUsernameInFollowers !== -1) {
                         // Delete the person being followed from following array of the current user
-                        currentUserFollowing = docs[0]["following"];
                         currentUserFollowing.splice(currentUserFollowing.indexOf(usernameToFollow), 1);
                         db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
                         returnArray = {"valid": true};
