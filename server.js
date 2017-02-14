@@ -131,6 +131,8 @@ app.post("/users", function (req, res) {
    // Check that entered username is not in database.
    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
       if (err) {
+         returnArray = {"token": "0000", "valid": false};
+         res.status(201).json(returnArray);
       } else {
          if (docs.length == 0) {
             /* Add new user to DB */
@@ -203,171 +205,225 @@ app.post("/users", function (req, res) {
 app.get("/users/:username", function (req, res) {
    given_username = req.params.username;
    // Get user data from the DB
-   db.collection(USERS_COLLECTION).find({username: { $regex: new RegExp(given_username, 'i') }}).toArray(function (err, docs) {
+   db.collection(USERS_COLLECTION).find({username: {$regex: new RegExp(given_username, 'i')}}).toArray(function (err, docs) {
       if (err) {
+         returnArray = {"valid": false};
+         res.status(201).json(returnArray);
       } else {
          returnArray = [];
-         docs.forEach(function(each){
+         docs.forEach(function (each) {
             person = {"userId": each._id, "username": each.username, "profilePicture": each.profilePicture};
             returnArray.push(person);
          });
          res.status(201).json(returnArray);
       }
    });
+
 });
 
-   /*
-    The following route returns an array of images based on string (tag) searched, array
-    containing image URL, imageId and datetime posted
-    (see README.md)
-    */
-   app.get("/photos/:tag", function (req, res) {
+/*
+ The following route returns an array of images based on string (tag) searched, array
+ containing image URL, imageId and datetime posted
+ (see README.md)
+ */
+app.get("/photos/:tag", function (req, res) {
 
-   });
+});
 
-   /*
-    Home
-    _____________________________________________________________
+/*
+ Home
+ _____________________________________________________________
 
-    User provides (implicitly) his username and recieves an array of the most
-    recent photos from users that person follows along with metadata.
-    (see README.md)
-    */
-   app.get("/home/:id", function (req, res) {
+ User provides (implicitly) his username and recieves an array of the most
+ recent photos from users that person follows along with metadata.
+ (see README.md)
+ */
+app.get("/home/:id", function (req, res) {
 
-   });
+});
 
-   /*
-    Share
-    _____________________________________________________________
-    An image and metadata is send to server where the photo is saved and in case of
-    success, the result is sent to user as imageId.
-    (see README.md)
-    */
-   app.post("/photos", function (req, res) {
+/*
+ Share
+ _____________________________________________________________
+ An image and metadata is send to server where the photo is saved and in case of
+ success, the result is sent to user as imageId.
+ (see README.md)
+ */
+app.post("/photos", function (req, res) {
 
-   });
+});
 
-   /*
-    Photo Interaction
-    _____________________________________________________________
-    Leave a comment under a photo, with imageId, comment and sessionToken supplied
-    (see README.md)
-    */
-   app.post("/photos/comment", function (req, res) {
+/*
+ Photo Interaction
+ _____________________________________________________________
+ Leave a comment under a photo, with imageId, comment and sessionToken supplied
+ (see README.md)
+ */
+app.post("/photos/comment", function (req, res) {
 
-   });
+});
 
-   /*
-    Leave a like under photo (unlike if already liked), with imageId
-    and sessionToken supplied
-    (see README.md)
-    */
-   app.post("/photos/like", function (req, res) {
+/*
+ Leave a like under photo (unlike if already liked), with imageId
+ and sessionToken supplied
+ (see README.md)
+ */
+app.post("/photos/like", function (req, res) {
 
-   });
+});
 
-   /*
-    Profile
-    _____________________________________________________________
-    Get the profile of the user with the images posted by providing userId
-    (see README.md)
-    */
-   app.get("/users/:id", function (req, res) {
-
-   });
-
-   /*
-    Upload new profile picture using sessionToken
-    */
-   app.put("/users/profilepicture", function (req, res) {
-
-   });
-
-   /*
-    Follow or unfollow specified user, using sessionToken
-    */
-   app.post("/users/follow", function (req, res) {
-      //Find followers of the user to follow
-      usernameToFollow = req.body.usernameToFollow;
-      db.collection(USERS_COLLECTION).find({username: usernameToFollow}).toArray(function (err, docs) {
+/*
+ Profile
+ _____________________________________________________________
+ Get the profile of the user with the images posted by providing userId
+ (see README.md)
+ */
+app.get("/users/profile/:id", function (req, res) {
+   // Fallback if id provided is incorrect
+   if (req.params.id.length != 24) {
+      returnArray = {"valid": false};
+      res.status(201).json(returnArray);
+   }
+   else {
+      // Get user data from the DB
+      db.collection(USERS_COLLECTION).find({"_id": new ObjectID(req.params.id)}).toArray(function (err, docs) {
          if (err) {
             returnArray = {"valid": false};
             res.status(201).json(returnArray);
-         } else {
-            // Store followers usernames of the user to follow
-            userToFollowFollowers = docs[0].followers;
-            // Find username of the current user.
-            db.collection(SESSIONS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
-               if (err) {
-                  returnArray = {"valid": false};
-                  res.status(201).json(returnArray);
-               } else {
-                  currentUserUsername = docs[0].username;
-                  indexOfUsernameInFollowers = userToFollowFollowers.indexOf(currentUserUsername);
-                  db.collection(USERS_COLLECTION).find({username: currentUserUsername}).toArray(function (err, docs) {
+         }
+         else {
+            returnObject = {
+               "userId": req.params.id, "username": docs[0].username, "followers": docs[0].followers,
+               "following": docs[0].following, "profilePicture": docs[0].profilePicture
+            };
+            //TODO get all photos of the user
+            userPhotosIDs = docs[0].photos;
+            userPhotos = [];
+            if (userPhotosIDs.length > 0) {
+               userPhotosIDs.forEach(function (photo, index) {
+                  if (userPhotosIDs.length - 1 == index) {
+                     lastindex = true
+                  }
+                  db.collection(PHOTOS_COLLECTION).find({"_id": new ObjectID(photo)}).toArray(function (err, docs) {
                      if (err) {
                         returnArray = {"valid": false};
                         res.status(201).json(returnArray);
-                     } else {
-                        currentUserFollowing = docs[0]["following"];
-                        // If user is already being followed - unfollow
-                        if (indexOfUsernameInFollowers !== -1) {
-                           // Delete the person being followed from following array of the current user
-                           currentUserFollowing.splice(currentUserFollowing.indexOf(usernameToFollow), 1);
-                           db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
-                           returnArray = {"valid": true};
-                           res.status(201).json(returnArray);
-                           // Delete current user from followers of the user followed.
-                           userToFollowFollowers.splice(indexOfUsernameInFollowers, 1);
-                           db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
-                        }
-                        // If user is not yet being followed - follow
-                        else {
-                           // If array of users following is empty - create array.
-                           if (currentUserFollowing == undefined) {
-                              currentUserFollowing = [];
-                           }
-                           // If array of followers is empty - create array.
-                           if (currentUserFollowing == undefined) {
-                              userToFollowFollowers = [];
-                           }
-                           // Push users to respective arrays and update DB data.
-                           currentUserFollowing.push(usernameToFollow);
-                           userToFollowFollowers.push(currentUserUsername);
-                           db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
-                           db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
-                           returnArray = {"valid": true};
-                           res.status(201).json(returnArray);
+                     }
+                     else {
+                        photo_object = {};
+                        photo_object.id = docs[0]._id;
+                        photo_object.img = docs[0].img;
+                        photo_object.date = docs[0].date;
+
+                        userPhotos.push(photo_object);
+                        console.log(userPhotos);
+                        if (lastindex) {
+                           returnObject.photos = userPhotos;
+                           res.status(201).json(returnObject);
                         }
                      }
                   });
-               }
-            });
+               });
+            }
+            else {
+               res.status(201).json(returnObject);
+            }
          }
       });
-   });
-
-   /*
-    Photo View
-    _____________________________________________________________
-    Get the photo and all related metadata to the client when imageId is specified.
-    (see README.md)
-    */
-   app.get("/photos/:id", function (req, res) {
-
-   });
-
-   /* System Specific Functions */
-
-   /* Random Token Generation */
-   function guid() {
-      return s4() + s4() + s4() + s4() +
-         s4() + s4() + s4() + s4() + s4() + s4() + s4();
    }
+});
 
-   function s4() {
-      return Math.floor((1 + Math.random()) * 0x10000)
-         .toString(16)
-         .substring(1);
-   }
+/*
+ Upload new profile picture using sessionToken
+ */
+app.put("/users/profilepicture", function (req, res) {
+
+});
+
+/*
+ Follow or unfollow specified user, using sessionToken
+ */
+app.post("/users/follow", function (req, res) {
+   //Find followers of the user to follow
+   usernameToFollow = req.body.usernameToFollow;
+   db.collection(USERS_COLLECTION).find({username: usernameToFollow}).toArray(function (err, docs) {
+      if (err) {
+         returnArray = {"valid": false};
+         res.status(201).json(returnArray);
+      } else {
+         // Store followers usernames of the user to follow
+         userToFollowFollowers = docs[0].followers;
+         // Find username of the current user.
+         db.collection(SESSIONS_COLLECTION).find({sessionToken: req.body.sessionToken}).toArray(function (err, docs) {
+            if (err) {
+               returnArray = {"valid": false};
+               res.status(201).json(returnArray);
+            } else {
+               currentUserUsername = docs[0].username;
+               indexOfUsernameInFollowers = userToFollowFollowers.indexOf(currentUserUsername);
+               db.collection(USERS_COLLECTION).find({username: currentUserUsername}).toArray(function (err, docs) {
+                  if (err) {
+                     returnArray = {"valid": false};
+                     res.status(201).json(returnArray);
+                  } else {
+                     currentUserFollowing = docs[0]["following"];
+                     // If user is already being followed - unfollow
+                     if (indexOfUsernameInFollowers !== -1) {
+                        // Delete the person being followed from following array of the current user
+                        currentUserFollowing.splice(currentUserFollowing.indexOf(usernameToFollow), 1);
+                        db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
+                        returnArray = {"valid": true};
+                        res.status(201).json(returnArray);
+                        // Delete current user from followers of the user followed.
+                        userToFollowFollowers.splice(indexOfUsernameInFollowers, 1);
+                        db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
+                     }
+                     // If user is not yet being followed - follow
+                     else {
+                        // If array of users following is empty - create array.
+                        if (currentUserFollowing == undefined) {
+                           currentUserFollowing = [];
+                        }
+                        // If array of followers is empty - create array.
+                        if (currentUserFollowing == undefined) {
+                           userToFollowFollowers = [];
+                        }
+                        // Push users to respective arrays and update DB data.
+                        currentUserFollowing.push(usernameToFollow);
+                        userToFollowFollowers.push(currentUserUsername);
+                        db.collection(USERS_COLLECTION).update({username: usernameToFollow}, {$set: {followers: userToFollowFollowers}});
+                        db.collection(USERS_COLLECTION).update({username: currentUserUsername}, {$set: {following: currentUserFollowing}});
+                        returnArray = {"valid": true};
+                        res.status(201).json(returnArray);
+                     }
+                  }
+               });
+            }
+         });
+      }
+   });
+});
+
+/*
+ Photo View
+ _____________________________________________________________
+ Get the photo and all related metadata to the client when imageId is specified.
+ (see README.md)
+ */
+app.get("/photos/:id", function (req, res) {
+
+});
+
+/* System Specific Functions */
+
+/* Random Token Generation */
+function guid() {
+   return s4() + s4() + s4() + s4() +
+      s4() + s4() + s4() + s4() + s4() + s4() + s4();
+}
+
+function s4() {
+   return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+}
