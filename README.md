@@ -335,7 +335,7 @@ __Client-side:__
     ```
 
 7. __Photo View__
-  *  GET /photos/:imageId
+  *  GET /photos/object/:id
 
     Description:
     Display the chosen photo and all data corresponding to it.
@@ -343,12 +343,12 @@ __Client-side:__
 
    |Parameter|Description|
    |:-------------:|:-------------:|
-   |imageId|ID of the image selected|
+   |id|ID of the image selected|
    Request:
 
     ```
     {
-     imageId: string
+     id: string
     }
     ```
 
@@ -356,6 +356,7 @@ __Client-side:__
 
     ```
     {
+      id: mongoId (picture's),
       owner: userId,
       date: string (Datetime),
       description: string,
@@ -404,7 +405,7 @@ __Client-side:__
 ### Sample document in Users collection
 ```
 {
-  id: mongoId,
+  _id: mongoId,
   username: string,
   hash: (hash + salt),
   email: string,
@@ -417,7 +418,7 @@ __Client-side:__
 ### Sample document in Photos collection
 ```
 {
-  id: mongoId,
+  _id: mongoId,
   owner: userId,
   date: string (Datetime),
   description: string,
@@ -436,7 +437,8 @@ __Client-side:__
 ### Sample document in Sessions collection
 ```
 {
-  userId: mongoId,
+  _id: mongoId (comment's),
+  userId: mongoId (user's),
   sessionToken: string,
   expires: date
 }

@@ -410,8 +410,33 @@ app.post("/users/follow", function (req, res) {
  Get the photo and all related metadata to the client when imageId is specified.
  (see README.md)
  */
-app.get("/photos/:id", function (req, res) {
-
+app.get("/photos/object/:id", function (req, res) {
+   console.log("SUUUO!");
+   // Fallback if id provided is incorrect
+   if (req.params.id.length != 24) {
+      console.log("SHitty length");
+      returnArray = {"valid": false};
+      res.status(201).json(returnArray);
+   }
+   else {
+      // Get user data from the DB
+      db.collection(PHOTOS_COLLECTION).find({"_id": new ObjectID(req.params.id)}).toArray(function (err, docs) {
+         if (err) {
+            returnArray = {"valid": false};
+            console.log("Error took place");
+            res.status(201).json(returnArray);
+         }
+         else {
+            console.log("Going Good So far!");
+            returnObject = {
+               "imageId": req.params.id, "owner": docs[0].owner, "date": docs[0].date,
+               "description": docs[0].description, "tags": docs[0].tags, "category": docs[0].category,
+               "img": docs[0].img, "likes": docs[0].likes, "comments": docs[0].comments
+            };console.log(returnObject);
+            res.status(201).json(returnObject);
+         }
+      });
+   }
 });
 
 /* System Specific Functions */
