@@ -227,7 +227,30 @@ app.get("/users/:username", function (req, res) {
  (see README.md)
  */
 app.get("/photos/:tag", function (req, res) {
-
+   // Get the regular expression for the tag searched
+   tagSearched = req.params.tag;
+   tagSearchedRegExp = new RegExp(tagSearched, 'i');
+   returnArray = [];
+   db.collection(PHOTOS_COLLECTION).find({}).toArray(function (err, docs) {
+      if (err) {
+         returnArray = {"valid": false};
+         res.status(201).json(returnArray);
+      }
+      else {
+         // For each of the posts search through tags
+         docs.forEach(function (photoObject) {
+            // Search through each of the tags
+            photoObject.tags.forEach(function (tag) {
+               // If tag of the post fits the search tag, return the post with the array of other posts
+               if (tag.match(tagSearchedRegExp) != null) {
+                  photoToArray = {"id": photoObject._id, "date": photoObject.date, "img": photoObject.img};
+                  returnArray.push(photoToArray);
+               }
+            });
+         });
+         res.status(201).json(returnArray);
+      }
+   });
 });
 
 /*
@@ -238,8 +261,30 @@ app.get("/photos/:tag", function (req, res) {
  recent photos from users that person follows along with metadata.
  (see README.md)
  */
-app.get("/home/:id", function (req, res) {
+app.get("/home/:username", function (req, res) {
+   username = req.params.username;
+   // Store photos to display at home page here:
+   followingPhotos = [];
+   // Find users current user follows:
+   db.collection(USERS_COLLECTION).find({"username": username}).toArray(function (err, docs) {
+      if (err) {
+         returnArray = {"valid": false};
+         res.status(201).json(returnArray);
+      } else {
+         userFollowingIds = docs[0].following;
+         userFollowingIds.foreach(function (user) {
+            db.collection(USERS_COLLECTION).find({"_id": new ObjectID(user)}).toArray(function (err, docs) {
+               if (err) {
+                  returnArray = {"valid": false};
+                  res.status(201).json(returnArray);
+               }
+               else {
 
+               }
+            });
+         });
+      }
+   });
 });
 
 /*
@@ -411,10 +456,8 @@ app.post("/users/follow", function (req, res) {
  (see README.md)
  */
 app.get("/photos/object/:id", function (req, res) {
-   console.log("SUUUO!");
    // Fallback if id provided is incorrect
    if (req.params.id.length != 24) {
-      console.log("SHitty length");
       returnArray = {"valid": false};
       res.status(201).json(returnArray);
    }
@@ -423,16 +466,14 @@ app.get("/photos/object/:id", function (req, res) {
       db.collection(PHOTOS_COLLECTION).find({"_id": new ObjectID(req.params.id)}).toArray(function (err, docs) {
          if (err) {
             returnArray = {"valid": false};
-            console.log("Error took place");
             res.status(201).json(returnArray);
          }
          else {
-            console.log("Going Good So far!");
             returnObject = {
-               "imageId": req.params.id, "owner": docs[0].owner, "date": docs[0].date,
+               "id": req.params.id, "owner": docs[0].owner, "date": docs[0].date,
                "description": docs[0].description, "tags": docs[0].tags, "category": docs[0].category,
                "img": docs[0].img, "likes": docs[0].likes, "comments": docs[0].comments
-            };console.log(returnObject);
+            };
             res.status(201).json(returnObject);
          }
       });
