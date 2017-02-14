@@ -121,7 +121,7 @@ __Client-side:__
    Result:
    ```
    {
-    photos : [Array of Photo Documents
+    photos : [
               {
                 id: mongoId,
                 owner: userId,
@@ -193,13 +193,13 @@ __Client-side:__
         following: [Array of userIDs],
         profilePicture: string (/img/profile/id)
       },
-      [ Array of Images
-        {
+        photos: [ 
+         {
           id: mongoId,
           date: string (Datetime),
           img: string (/img/post/string),
-        }
-      ]
+         }
+        ]
      ]
      ```
   *  POST /users/follow
@@ -268,7 +268,7 @@ __Client-side:__
      ```
      Result:
     ```
-     [ Array of Users
+     [
       {
         userId: string,
         username: string,
@@ -294,7 +294,7 @@ __Client-side:__
      ```
      Result:
      ```
-     [ Array of Images
+     [
       {
         id: mongoId,
         date: string (Datetime),
@@ -363,11 +363,11 @@ __Client-side:__
       category: string,
       img: string (/img/post/string),
       likes: [Array of userIDs],
-      comments: [Array of Objects of the type:
-            {
+      comments: [
+             {
               personId: userId,
               comment: string
-            }
+             }
             ]
     }
     ```
@@ -425,11 +425,11 @@ __Client-side:__
   category: string,
   img: string (/img/post/string),
   likes: [Array of userIDs],
-  comments: [Array of Objects of the type:
-            {
+  comments: [
+             {
               personId: userId,
               comment: string
-            }
+             }
             ]
 }
 ```
