@@ -1,22 +1,23 @@
 # server-application
 
-## System Requirements
-__Both sides:__
-* Node.js - v. 6.9.5
-* npm - v. 4.1.1
+## System Requirements:
 
 __Server-side__
+* npm - supplied by heroku
+* Node.js - supplied by heroku
 * "body-parser": "^1.13.3"
 * "express": "^4.13.3"
 * "mongodb": "^2.2.22"
 
 __Client-side:__
+* Node.js - v. 6.9.5
+* npm - v. 4.1.1
 * AngularJS - latest
 * Ionic - v. 1.3.2
 
 ## Rest API
 
-1. __Signing In__  
+1. __Signing In__  __READY__
    POST /users/in
 
    Description:
@@ -45,7 +46,7 @@ __Client-side:__
    }
    ```
 
-    __Signing Out__
+    __Signing Out__ __READY__
     POST /users/out
 
     Description:
@@ -70,7 +71,7 @@ __Client-side:__
      ```
 
 
-2. __Signing Up__  
+2. __Signing Up__  __READY__
    POST /users
 
    Description:
@@ -166,7 +167,7 @@ __Client-side:__
       valid: boolean
      }
      ```
-4. __Profile__
+4. __Profile__ __READY__
   *  GET /users/profile/:id
 
      Description:
@@ -202,7 +203,7 @@ __Client-side:__
         ]
      ]
      ```
-  *  POST /users/follow
+  *  POST /users/follow  __READY__
 
      Description:
      Follow or unfollow the specified user.
@@ -251,7 +252,7 @@ __Client-side:__
      ```
 
 5. __Search__
-  *  GET /users/:username
+  *  GET /users/:username __READY__
 
      Description:
      Display users based on string searched (list view)
@@ -335,7 +336,7 @@ __Client-side:__
     ```
 
 7. __Photo View__
-  *  GET /photos/object/:id
+  *  GET /photos/object/:id __READY__
 
     Description:
     Display the chosen photo and all data corresponding to it.
