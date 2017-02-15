@@ -1,5 +1,6 @@
 var express = require("express");
 var path = require("path");
+var cors = require("cors");
 var bodyParser = require("body-parser");
 var mongodb = require("mongodb");
 var ObjectID = mongodb.ObjectID;
@@ -10,6 +11,7 @@ var SESSIONS_COLLECTION = "sessions";
 
 var app = express();
 app.use(express.static(__dirname + "/public"));
+app.use(cors());
 app.use(bodyParser.json());
 
 // Create a database variable outside of the database connection callback to reuse the connection pool in your app.
@@ -94,6 +96,9 @@ app.post("/users/in", function (req, res) {
             },
             function (err, doc) {
                if (err) {
+                  returnArray = {"valid": false};
+                  res.status(201).json(returnArray);
+
                } else {
                   returnArray = {"token": sessionTokenResult, "valid": true};
                   res.status(201).json(returnArray);
@@ -231,6 +236,7 @@ app.get("/photos/:tag", function (req, res) {
    tagSearched = req.params.tag;
    tagSearchedRegExp = new RegExp(tagSearched, 'i');
    returnArray = [];
+   // Get all the photos
    db.collection(PHOTOS_COLLECTION).find({}).toArray(function (err, docs) {
       if (err) {
          returnArray = {"valid": false};
@@ -305,7 +311,10 @@ app.post("/photos", function (req, res) {
  (see README.md)
  */
 app.post("/photos/comment", function (req, res) {
-
+   // Store the data supplied in a simpler fashion.
+   comment = req.body.comment;
+   id = req.body.id;
+   sessionTokenGiven = req.body.sessionToken;
 });
 
 /*
@@ -314,7 +323,72 @@ app.post("/photos/comment", function (req, res) {
  (see README.md)
  */
 app.post("/photos/like", function (req, res) {
+   // Store the data supplied in a simpler fashion.
+   id = req.body.id;
+   sessionTokenGiven = req.body.sessionToken;
 
+   // Find username of the person who initiated action (if session is correct and whom it belongs to)
+   db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenGiven}).toArray(function (err, docs) {
+      if (err) {
+         returnArray = {"valid": false};
+         res.status(201).json(returnArray);
+      } else if (docs.length > 0){
+         currentUserUsername = docs[0].username;
+
+         // Find user ID of the person who initiated action (if session is correct and whom it belongs to)
+         db.collection(USERS_COLLECTION).find({username: currentUserUsername}).toArray(function (err, docs) {
+            if (err) {
+               returnArray = {"valid": false};
+               res.status(201).json(returnArray);
+            } else {
+               currentUserId = docs[0]._id.toString();
+               console.log(currentUserId);
+
+               // Get the post to be liked/unliked.
+               db.collection(PHOTOS_COLLECTION).find({"_id": new ObjectID(id)}).toArray(function (err, docs) {
+                  if (err) {
+                     returnArray = {"valid": false};
+                     res.status(201).json(returnArray);
+                  }
+                  else if(docs.length > 0){
+                     photo_object = docs[0];
+                     photo_object_likes = docs[0].likes;
+                     liked = false;
+                     // Check whether current user has already liked the post (search current user's ID in liked)
+                     photo_object_likes.forEach(function (idLiked) {
+                        // The user has liked the post - unlike
+                        if (idLiked == currentUserId) {
+                           liked = true;
+                           console.log(idLiked + " Already Liked");
+                        }
+                     });
+                     // The user has liked the post - unlike
+                     if (liked) {
+                        photo_object_likes.splice(photo_object_likes.indexOf(currentUserId), 1) &&
+                        db.collection(PHOTOS_COLLECTION).update({"_id": new ObjectID(id)}, {$set: {likes: photo_object_likes}});
+                     }
+                     // The user has not liked the post - like
+                     else {
+                        photo_object_likes.push(currentUserId) &&
+                           db.collection(PHOTOS_COLLECTION).update({"_id": new ObjectID(id)}, {$set: {likes: photo_object_likes}});
+                     }
+                     console.log(photo_object_likes);
+                     returnArray = {"valid": true};
+                     res.status(201).json(returnArray);
+                  }
+                  else {
+                     returnArray = {"valid": false};
+                     res.status(201).json(returnArray);
+                  }
+               });
+            }
+         });
+      }
+      else {
+         returnArray = {"valid": false};
+         res.status(201).json(returnArray);
+      }
+   });
 });
 
 /*

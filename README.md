@@ -146,7 +146,9 @@ __Client-side:__
 
    P.S. The resulting array is not filtered by datetime - load on the client.
 
-  *  POST /photos/like
+  *  POST  
+    __READY__
+    /photos/like
 
      Description:
      Toggle the like (liking/unliking) the picture.
