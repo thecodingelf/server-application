@@ -382,7 +382,9 @@ __Client-side:__
             ]
     }
     ```
-  *  POST /photos/comment
+  *  POST /photos/comment  
+      __READY__
+
 
    Description:
    Post a comment to a photo, comment is added to the photo document "comment" property (key)
@@ -390,14 +392,14 @@ __Client-side:__
 
    |Parameter|Description|
    |:-------------:|:-------------:|
-   |imageId|ID of the image being commented|
+   |id|ID of the image being commented|
    |comment|Content of the comment|
    |sessionToken| User confirms the identity with security token|
    Request:
 
     ```
     {
-     imageId: string,
+     id: string,
      comment: string,
      sessionToken: string
     }
@@ -438,7 +440,7 @@ __Client-side:__
   likes: [Array of userIDs],
   comments: [
              {
-              personId: userId,
+              username: userId,
               comment: string
              }
             ]

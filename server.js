@@ -301,7 +301,7 @@ app.get("/home/:username", function (req, res) {
  (see README.md)
  */
 app.post("/photos", function (req, res) {
-
+   res.status(201).send(req);
 });
 
 /*
@@ -315,6 +315,44 @@ app.post("/photos/comment", function (req, res) {
    comment = req.body.comment;
    id = req.body.id;
    sessionTokenGiven = req.body.sessionToken;
+
+   // Find username of the person who initiated action (if session is correct and whom it belongs to)
+   db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenGiven}).toArray(function (err, docs) {
+      if (err) {
+         returnArray = {"valid": false};
+         res.status(201).json(returnArray);
+      } else if (docs.length > 0) {
+         currentUserUsername = docs[0].username;
+
+         // Get the post to be commented
+         db.collection(PHOTOS_COLLECTION).find({"_id": new ObjectID(id)}).toArray(function (err, docs) {
+            if (err) {
+               returnArray = {"valid": false};
+               res.status(201).json(returnArray);
+            }
+            else if (docs.length > 0) {
+               // Get the array of comments, create new comment object and push it to the existing array
+               photo_object_comments = docs[0].comments;
+               if(photo_object_comments == null || photo_object_comments == undefined){
+                  photo_object_comments = [];
+               }
+               new_comment = {"username": currentUserUsername, "comment": comment};
+               photo_object_comments.push(new_comment) &&
+               db.collection(PHOTOS_COLLECTION).update({"_id": new ObjectID(id)}, {$set: {comments: photo_object_comments}});
+               returnArray = {"valid": true};
+               res.status(201).json(returnArray);
+            }
+            else {
+               returnArray = {"valid": false};
+               res.status(201).json(returnArray);
+            }
+         });
+      }
+      else {
+         returnArray = {"valid": false};
+         res.status(201).json(returnArray);
+      }
+   });
 });
 
 /*
@@ -332,7 +370,7 @@ app.post("/photos/like", function (req, res) {
       if (err) {
          returnArray = {"valid": false};
          res.status(201).json(returnArray);
-      } else if (docs.length > 0){
+      } else if (docs.length > 0) {
          currentUserUsername = docs[0].username;
 
          // Find user ID of the person who initiated action (if session is correct and whom it belongs to)
@@ -342,7 +380,6 @@ app.post("/photos/like", function (req, res) {
                res.status(201).json(returnArray);
             } else {
                currentUserId = docs[0]._id.toString();
-               console.log(currentUserId);
 
                // Get the post to be liked/unliked.
                db.collection(PHOTOS_COLLECTION).find({"_id": new ObjectID(id)}).toArray(function (err, docs) {
@@ -350,7 +387,7 @@ app.post("/photos/like", function (req, res) {
                      returnArray = {"valid": false};
                      res.status(201).json(returnArray);
                   }
-                  else if(docs.length > 0){
+                  else if (docs.length > 0) {
                      photo_object = docs[0];
                      photo_object_likes = docs[0].likes;
                      liked = false;
@@ -359,7 +396,6 @@ app.post("/photos/like", function (req, res) {
                         // The user has liked the post - unlike
                         if (idLiked == currentUserId) {
                            liked = true;
-                           console.log(idLiked + " Already Liked");
                         }
                      });
                      // The user has liked the post - unlike
@@ -370,9 +406,8 @@ app.post("/photos/like", function (req, res) {
                      // The user has not liked the post - like
                      else {
                         photo_object_likes.push(currentUserId) &&
-                           db.collection(PHOTOS_COLLECTION).update({"_id": new ObjectID(id)}, {$set: {likes: photo_object_likes}});
+                        db.collection(PHOTOS_COLLECTION).update({"_id": new ObjectID(id)}, {$set: {likes: photo_object_likes}});
                      }
-                     console.log(photo_object_likes);
                      returnArray = {"valid": true};
                      res.status(201).json(returnArray);
                   }
@@ -435,7 +470,6 @@ app.get("/users/profile/:id", function (req, res) {
                         photo_object.date = docs[0].date;
 
                         userPhotos.push(photo_object);
-                        console.log(userPhotos);
                         if (lastindex) {
                            returnObject.photos = userPhotos;
                            res.status(201).json(returnObject);
