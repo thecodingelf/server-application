@@ -17,7 +17,8 @@ __Client-side:__
 
 ## Rest API
 
-1. __Signing In__  __READY__
+1. __Signing In__  
+   __READY__
    POST /users/in
 
    Description:
@@ -103,7 +104,8 @@ __Client-side:__
    }
    ```
 
-3. __Home Page__
+3. __Home Page__  
+   __READY__
   *  GET /home/:username
 
    Description:
@@ -172,8 +174,8 @@ __Client-side:__
      }
      ```
 4. __Profile__  
+   __READY__
   *  GET /users/profile/:id  
-     __READY__
 
      Description:
      Get the profile of the user.
@@ -421,10 +423,10 @@ __Client-side:__
   username: string,
   hash: (hash + salt),
   email: string,
-  followers: [Array of userIDs],
-  following: [Array of userIDs],
+  followers: [Array of usernames],
+  following: [Array of usernames],
   photos: [Array of photoIDs],
-  profilePicture: string (/img/profile/id)
+  profilePicture: string (/version/profile/string)
 }
 ```
 ### Sample document in Photos collection
@@ -436,7 +438,7 @@ __Client-side:__
   description: string,
   tags: [Array of strings],
   category: string,
-  img: string (/img/post/string),
+  img: string (/version/posts/string),
   likes: [Array of userIDs],
   comments: [
              {
