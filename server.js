@@ -1,19 +1,43 @@
+/* INITIALIZE APPLICATION DEPENDECIES --------------------------------------------------------------------------------*/
 var express = require("express");
 var path = require("path");
 var cors = require("cors");
 var bodyParser = require("body-parser");
 var mongodb = require("mongodb");
-var ObjectID = mongodb.ObjectID;
-
-var USERS_COLLECTION = "users";
-var PHOTOS_COLLECTION = "photos";
-var SESSIONS_COLLECTION = "sessions";
+var multer = require('multer');
+var cloudinary = require('cloudinary');
+var cloudinaryStorage = require('multer-storage-cloudinary');
 
 var app = express();
-app.use(express.static(__dirname + "/public"));
 app.use(cors());
 app.use(bodyParser.json());
 
+/* -------------------------------------------------------------------------------------------------------------------*/
+
+/* INITIALIZE CLOUD IMAGE STORAGE ------------------------------------------------------------------------------------*/
+
+/* Config cloudinary for the multer-storage-cloudinary object.
+ Notice that the cloudinary object automatically configures itself
+ based on the Heroku env-variables. */
+var storage = cloudinaryStorage({
+   cloudinary: cloudinary,
+   folder: '', // cloudinary folder where you want to store images, empty is root
+   allowedFormats: ['jpg', 'png']
+});
+
+/* Initialize multer middleware with the multer-storage-cloudinary based
+ storage engine */
+var parser = multer({storage: storage});
+
+/* -------------------------------------------------------------------------------------------------------------------*/
+
+
+/* INITIALIZE DB -----------------------------------------------------------------------------------------------------*/
+
+var ObjectID = mongodb.ObjectID;
+var USERS_COLLECTION = "users";
+var PHOTOS_COLLECTION = "photos";
+var SESSIONS_COLLECTION = "sessions";
 // Create a database variable outside of the database connection callback to reuse the connection pool in your app.
 var db;
 
@@ -35,7 +59,9 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
    });
 });
 
-// API ROUTES BELOW
+/* -------------------------------------------------------------------------------------------------------------------*/
+
+// API ROUTES BELOW --------------------------------------------------------------------------------------------------*/
 
 // Generic error handler used by all endpoints.
 function handleError(res, reason, message, code) {
@@ -271,24 +297,60 @@ app.get("/home/:username", function (req, res) {
    username = req.params.username;
    // Store photos to display at home page here:
    followingPhotos = [];
-   // Find users current user follows:
+   // Find usernames of users current user follows:
    db.collection(USERS_COLLECTION).find({"username": username}).toArray(function (err, docs) {
       if (err) {
          returnArray = {"valid": false};
          res.status(201).json(returnArray);
-      } else {
-         userFollowingIds = docs[0].following;
-         userFollowingIds.foreach(function (user) {
-            db.collection(USERS_COLLECTION).find({"_id": new ObjectID(user)}).toArray(function (err, docs) {
-               if (err) {
-                  returnArray = {"valid": false};
-                  res.status(201).json(returnArray);
-               }
-               else {
-
-               }
-            });
+      } else if (docs.length > 0){
+         userFollowingUsernames = docs[0].following;
+         // Take all users
+         db.collection(USERS_COLLECTION).find({}).toArray(function (err, docs) {
+            if (err) {
+               returnArray = {"valid": false};
+               res.status(201).json(returnArray);
+            }
+            else {
+               // Find users current user follows
+               userObjectsBeingFollowed = [];
+               docs.forEach(function (user) {
+                  if(userFollowingUsernames.indexOf(user.username) >= 0 ){
+                     userObjectsBeingFollowed.push(user);
+                  }
+               });
+               // Return photo IDs of users being followed
+               photoIdsToReturn = [];
+               userObjectsBeingFollowed.forEach(function (user) {
+                  userPhotos = user.photos;
+                  userPhotos.forEach(function (photo) {
+                     photoIdsToReturn.push(photo);
+                  });
+               });
+               // Take all photos
+               db.collection(PHOTOS_COLLECTION).find({}).toArray(function (err, docs) {
+                  if (err) {
+                     returnArray = {"valid": false};
+                     res.status(201).json(returnArray);
+                  }
+                  else {
+                     // Find photos of people being followed, add them to array and return
+                     docs.forEach(function (photoObject) {
+                        currentId = photoObject._id.toString();
+                        console.log(photoIdsToReturn);
+                        console.log(photoIdsToReturn.indexOf(currentId) >= 0);
+                        if (photoIdsToReturn.indexOf(currentId) >= 0) {
+                           followingPhotos.push(photoObject);
+                        }
+                     });
+                     res.status(201).json(followingPhotos);
+                  }
+               });
+            }
          });
+      }
+      else {
+         returnArray = {"valid": false};
+         res.status(201).json(returnArray);
       }
    });
 });
@@ -300,8 +362,8 @@ app.get("/home/:username", function (req, res) {
  success, the result is sent to user as imageId.
  (see README.md)
  */
-app.post("/photos", function (req, res) {
-   res.status(201).send(req);
+app.post("/photos", parser.single('image'), function (req, res) {
+   res.status(201).json(req);
 });
 
 /*
@@ -333,7 +395,7 @@ app.post("/photos/comment", function (req, res) {
             else if (docs.length > 0) {
                // Get the array of comments, create new comment object and push it to the existing array
                photo_object_comments = docs[0].comments;
-               if(photo_object_comments == null || photo_object_comments == undefined){
+               if (photo_object_comments == null || photo_object_comments == undefined) {
                   photo_object_comments = [];
                }
                new_comment = {"username": currentUserUsername, "comment": comment};
@@ -450,7 +512,6 @@ app.get("/users/profile/:id", function (req, res) {
                "userId": req.params.id, "username": docs[0].username, "followers": docs[0].followers,
                "following": docs[0].following, "profilePicture": docs[0].profilePicture
             };
-            //TODO get all photos of the user
             userPhotosIDs = docs[0].photos;
             userPhotos = [];
             if (userPhotosIDs.length > 0) {
@@ -587,8 +648,9 @@ app.get("/photos/object/:id", function (req, res) {
       });
    }
 });
+/* -------------------------------------------------------------------------------------------------------------------*/
 
-/* System Specific Functions */
+/* System Specific Functions -----------------------------------------------------------------------------------------*/
 
 /* Random Token Generation */
 function guid() {
@@ -601,3 +663,5 @@ function s4() {
       .toString(16)
       .substring(1);
 }
+
+/* -------------------------------------------------------------------------------------------------------------------*/
