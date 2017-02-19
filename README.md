@@ -343,7 +343,7 @@ __Client-side:__
    Result:
     ```
     {
-     imageId: string
+     id: string
     }
     ```
 
