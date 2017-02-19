@@ -42,7 +42,6 @@ __Client-side:__
    Result:
    ```
    {
-    valid: boolean,
     token: string
    }
    ```
@@ -68,7 +67,7 @@ __Client-side:__
     Result:
     ```
     {
-     valid: boolean
+     valid: true
     }
      ```
 
@@ -99,7 +98,6 @@ __Client-side:__
    Result:
    ```
    {
-    valid: boolean,
     token: string
    }
    ```
@@ -159,18 +157,18 @@ __Client-side:__
      |Parameter|Description|
      |:-------------:|:-------------:|
      |sessionToken| User confirms the identity with security token|
-     |imageId| ID of the image to be liked/unliked|
+     |id| ID of the image to be liked/unliked|
      Request:
      ```
      {
-      imageId: string,
+      id: string,
       sessionToken: string
      }
      ```
      Result:
      ```
      {
-      valid: boolean
+      valid: true
      }
      ```
 4. __Profile__  
@@ -184,11 +182,11 @@ __Client-side:__
 
      |Parameter|Description|
      |:-------------:|:-------------:|
-     |userId| Username ID of the current user|
+     |id| Username ID of the current user|
      Request:
      ```
      {
-      userId: string
+      id: string
      }
      ```
      Result:
@@ -231,11 +229,11 @@ __Client-side:__
      Result:
      ```
      {
-      valid: boolean
+      valid: true
      }
      ```
 
-  *  PUT /users/profilepicture
+  *  POST /users/profilepicture
 
      Description:
      Upload new profile picture
@@ -243,19 +241,21 @@ __Client-side:__
 
      |Parameter|Description|
      |:-------------:|:-------------:|
-     |image|Binary data of the new profile image|
+     |file|Images are to be supplied with the following attribute type="file" enctype="multipart/form-data"|
      |sessionToken| User confirms the identity with security token|
      Request:
      ```
+     req.file will contain data of the image that has been uploaded to Cloudinary
+    
+     At req.body:
      {
-      image: blob (binary),
       sessionToken: string
      }
      ```
      Result:
      ```
      {
-      valid: boolean
+      valid: true
      }
      ```
 
@@ -323,15 +323,17 @@ __Client-side:__
 
    |Parameter|Description|
    |:-------------:|:-------------:|
-   |image|Binary data of the new image|
+   |file|Images are to be supplied with the following attribute type="file" enctype="multipart/form-data"|
    |description|Free form description of the picture|
    |category|One of the preoffered categories|
    |tags|Array of free form tags|
    |sessionToken| User confirms the identity with security token|
    Request:
     ```
+    req.file will contain data of the image that has been uploaded to Cloudinary
+    
+    At req.body:
     {
-     image: blob (binary),
      description: string,
      category: string,
      tags: [Array of Strings],
@@ -413,7 +415,14 @@ __Client-side:__
      valid: true
     }
     ```
-
+    
+### Invalid Request & Errors
+If invalid request has been submitted or an error has occured, the following json object is sent back to the client:
+   ```
+    {
+     valid: false
+    }
+   ```
 
 ## Database Structure
 ### Sample document in Users collection
@@ -457,3 +466,11 @@ __Client-side:__
   expires: date
 }
 ```
+
+## Image Storage
+
+Images are stored at Cloudinary.
+RootURL for the images stored is:  
+http://res.cloudinary.com/hr4thv0h6/image/upload/
+
+All urls stored in database and leading to images are shortened. The link above is to be prepended.
