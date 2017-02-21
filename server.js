@@ -8,6 +8,8 @@ var mongodb = require("mongodb");
 var multer = require('multer');
 var cloudinary = require('cloudinary');
 var cloudinaryStorage = require('multer-storage-cloudinary');
+// For salting and hashing password-hash-and-salt', PBKDF2
+var password = require('password-hash-and-salt');
 
 var app = express();
 // cors allows Cross Origin Requests (requests will be rejected by the API if not this)
@@ -98,86 +100,26 @@ app.post("/users/in", function (req, res) {
       returnInvalid(res);
     }
     // If entered username exists and password is correct
-    else if (req.body.hash == docs[0].hash) {
-      newToken = true;
-      do
-      {
-        /* Generate session token */
-        sessionTokenResult = guid();
-        /* Check that the token generated does not yet exist in the DB */
-        db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
-          if (err) {
-          } else {
-            if (docs.length != 0) {
-              newToken = false;
-            }
-          }
-        });
-      }
-      while (!newToken);
-
-      /*
-       If user has been added to the DB, add the generated session token to the database.
-       */
-      db.collection(SESSIONS_COLLECTION).insertOne({
-          username: req.body.username,
-          sessionToken: sessionTokenResult
-        },
-        function (err, doc) {
-          if (err) {
-            returnInvalid(res);
-          } else {
-            returnArray = {"token": sessionTokenResult};
-            res.status(201).json(returnArray);
-          }
-        });
-    }
-    // If entered username or password are incorrect
-    else {
-      returnInvalid(res);
-    }
-  });
-});
-
-/*
- The following route logs the user out by deleting previously granted sessionToken from Sessions.
- Session token to be supplied with request.
- collection (see README.md)
- */
-app.post("/users/out", function (req, res) {
-  returnArray = {"valid": true};
-  db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}) && res.status(201).json(returnArray);
-});
-
-/*
- The following route signs up the user by storing user data in
- Users collection and session in the Sessions collection, returning sessionToken
- if hash and username correspond to the entry in the database. Returns false as
- valid boolean value and "0000" as a security token if the entry is not found.
- (see README.md)
- */
-app.post("/users", function (req, res) {
-
-  // Check that entered username is not in database.
-  db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
-    if (err) {
-      returnInvalid(res);
-    } else {
-      if (docs.length == 0) {
-        /* Add new user to DB */
-        db.collection(USERS_COLLECTION).insertOne({
-            username: req.body.username,
-            hash: req.body.hash,
-            email: req.body.email,
-            followers: [],
-            following: [],
-            photos: [],
-            profilePicture: "v1487509627/profile_default_fis5w4.png"
-          },
-          function (err, doc) {
+    else if (docs.length == 1) {
+      // Verify supplied password against salted hash stored in the database
+      password(req.body.password).verifyAgainst(docs[0].hash, function (error, verified) {
+        if (error)
+          returnInvalid(res);
+        if (!verified) {
+          returnInvalid(res);
+        } else {
+          db.collection(SESSIONS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
             if (err) {
-              handleError(res, err.message, "Failed to create new user.");
-            } else {
+              returnInvalid(res);
+            }
+            // If there is already a session token for the user
+            else if (docs.length != 0){
+              sessionTokenResult = docs[0].sessionToken;
+              returnArray = {"token": sessionTokenResult};
+              res.status(201).json(returnArray);
+            }
+            // Get user a session token
+            else {
               newToken = true;
               do
               {
@@ -204,20 +146,116 @@ app.post("/users", function (req, res) {
                 },
                 function (err, doc) {
                   if (err) {
+                    returnInvalid(res);
                   } else {
                     returnArray = {"token": sessionTokenResult};
                     res.status(201).json(returnArray);
                   }
                 });
             }
-          }
-        );
-      }
-      else {
-        // If entered username already exists:
-        returnInvalid(res);
-      }
+          });
+        }
+      });
     }
+    // If entered username or password are incorrect
+    else {
+      returnInvalid(res);
+    }
+  });
+});
+
+/*
+ The following route logs the user out by deleting previously granted sessionToken from Sessions.
+ Session token to be supplied with request.
+ collection (see README.md)
+ */
+app.post("/users/out", function (req, res) {
+  returnArray = {"valid": true};
+  db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}) && res.status(201).json(returnArray);
+});
+
+/*
+ The following route signs up the user by storing user data in
+ Users collection and session in the Sessions collection, returning sessionToken
+ if hash and username correspond to the entry in the database. Returns false as
+ valid boolean value and "0000" as a security token if the entry is not found.
+ (see README.md)
+ */
+app.post("/users", function (req, res) {
+  console.log("Zero");
+  // Check that entered username is not in database.
+  db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+    if (err) {
+      console.log("First");
+      returnInvalid(res);
+    } else if (docs.length == 0) {
+      console.log("SEcond");
+      given_password = req.body.password;
+      // Creating hash and salt
+      password(given_password).hash(function (error, hash) {
+        if (error) {
+          console.log("Error in Hashing")
+        }
+        else {
+          console.log(hash);
+          /* Add new user to DB */
+          db.collection(USERS_COLLECTION).insertOne({
+              username: req.body.username,
+              hash: hash,
+              email: req.body.email,
+              followers: [],
+              following: [],
+              photos: [],
+              profilePicture: "v1487509627/profile_default_fis5w4.png"
+            },
+            function (err, doc) {
+              if (err) {
+                handleError(res, err.message, "Failed to create new user.");
+              } else {
+                console.log("Third");
+                newToken = true;
+                do
+                {
+                  /* Generate session token */
+                  sessionTokenResult = guid();
+                  /* Check that the token generated does not yet exist in the DB */
+                  db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
+                    if (err) {
+                      console.log("Fourth");
+                    } else {
+                      if (docs.length != 0) {
+                        newToken = false;
+                      }
+                    }
+                  });
+                }
+                while (!newToken);
+
+                /*
+                 If user has been added to the DB, add the generated session token to the database.
+                 */
+                db.collection(SESSIONS_COLLECTION).insertOne({
+                    username: req.body.username,
+                    sessionToken: sessionTokenResult
+                  },
+                  function (err, doc) {
+                    if (err) {
+                    } else {
+                      returnArray = {"token": sessionTokenResult};
+                      res.status(201).json(returnArray);
+                    }
+                  });
+              }
+            }
+          );
+        }
+      });
+    }
+    else {
+      // If entered username already exists:
+      returnInvalid(res);
+    }
+
   });
 });
 
@@ -256,7 +294,7 @@ app.get("/photos/:tag", function (req, res) {
   // Get the regular expression for the tag searched
   tagSearched = req.params.tag;
   // If user has has not entered the hashtag prepend it to the string
-  if(tagSearched.slice(0,1) != "#") {
+  if (tagSearched.slice(0, 1) != "#") {
     tagSearched = "#" + tagSearched;
   }
   tagSearchedRegExp = new RegExp(tagSearched, 'i');
