@@ -23,7 +23,7 @@ __Client-side:__
 
    Description:
    User sends precalculated salted hash and the username.
-   If the hash and the username have a corresponding entry in the database, the session token is generated with a PRNG,
+   If the password and the username have a corresponding entry in the database, the session token is generated with a PRNG,
    the user is redirected to the home page view.
 
    Parameters:  
@@ -31,18 +31,19 @@ __Client-side:__
    |Parameter|Description|
    |:-------------:|:-------------:|
    |username|Username provided while signing in|
-   |hash|hash=func(salt + password)|  
+   |password|User's password|  
    Request:
    ```
    {
     username: string,
-    hash: string
+    password: string
    }
    ```
    Result:
    ```
    {
-    token: string
+    token: string,
+    userId: string
    }
    ```
 
@@ -77,28 +78,29 @@ __Client-side:__
    POST /users
 
    Description:
-   User sends precalculated salted hash, the username and the email.
-   If the username and the email do not exist in the database, the session token is generated with a PRNG, new user is added to the database and the user is redirected to the home page view.
+   User sends password, the username and the email.
+   If the username does not exist in the database, the session token is generated with a PRNG, new user is added to the database and the user is redirected to the home page view.
 
    Parameters:  
 
    |Parameter|Description|
    |:-------------:|:-------------:|
    |username|Username provided while signing in|
-   |hash|hash=func(salt + password)|
+   |password|User's password|
    |email|User's email address for signing up)|
    Request:
    ```
    {
     username: string,
-    hash: string,
+    password: string,
     email: string
    }
    ```
    Result:
    ```
    {
-    token: string
+    token: string,
+    userId: string
    }
    ```
 
@@ -246,7 +248,7 @@ __Client-side:__
      Request:
      ```
      req.file will contain data of the image that has been uploaded to Cloudinary
-    
+
      At req.body:
      {
       sessionToken: string
@@ -331,7 +333,7 @@ __Client-side:__
    Request:
     ```
     req.file will contain data of the image that has been uploaded to Cloudinary
-    
+
     At req.body:
     {
      description: string,
@@ -415,7 +417,7 @@ __Client-side:__
      valid: true
     }
     ```
-    
+
 ### Invalid Request & Errors
 If invalid request has been submitted or an error has occured, the following json object is sent back to the client:
    ```

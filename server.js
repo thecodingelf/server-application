@@ -101,10 +101,12 @@ app.post("/users/in", function (req, res) {
     }
     // If entered username exists and password is correct
     else if (docs.length == 1) {
+      userId = docs[0]._id;
       // Verify supplied password against salted hash stored in the database
       password(req.body.password).verifyAgainst(docs[0].hash, function (error, verified) {
-        if (error)
+        if (error){
           returnInvalid(res);
+        }
         if (!verified) {
           returnInvalid(res);
         } else {
@@ -115,8 +117,14 @@ app.post("/users/in", function (req, res) {
             // If there is already a session token for the user
             else if (docs.length != 0){
               sessionTokenResult = docs[0].sessionToken;
-              returnArray = {"token": sessionTokenResult};
-              res.status(201).json(returnArray);
+              db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+                if (err) {
+                  returnInvalid(res);
+                } else {
+                  returnArray = {"token": sessionTokenResult, "userId": docs[0]._id};
+                  res.status(201).json(returnArray);
+                }
+              });
             }
             // Get user a session token
             else {
@@ -148,8 +156,14 @@ app.post("/users/in", function (req, res) {
                   if (err) {
                     returnInvalid(res);
                   } else {
-                    returnArray = {"token": sessionTokenResult};
-                    res.status(201).json(returnArray);
+                    db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+                      if (err) {
+                        returnInvalid(res);
+                      } else {
+                        returnArray = {"token": sessionTokenResult, "userId": docs[0]._id};
+                        res.status(201).json(returnArray);
+                      }
+                    });
                   }
                 });
             }
@@ -182,22 +196,19 @@ app.post("/users/out", function (req, res) {
  (see README.md)
  */
 app.post("/users", function (req, res) {
-  console.log("Zero");
   // Check that entered username is not in database.
   db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
     if (err) {
-      console.log("First");
       returnInvalid(res);
     } else if (docs.length == 0) {
-      console.log("SEcond");
       given_password = req.body.password;
       // Creating hash and salt
       password(given_password).hash(function (error, hash) {
         if (error) {
-          console.log("Error in Hashing")
+          console.log("Error in Hashing");
+          returnInvalid(res);
         }
         else {
-          console.log(hash);
           /* Add new user to DB */
           db.collection(USERS_COLLECTION).insertOne({
               username: req.body.username,
@@ -212,7 +223,6 @@ app.post("/users", function (req, res) {
               if (err) {
                 handleError(res, err.message, "Failed to create new user.");
               } else {
-                console.log("Third");
                 newToken = true;
                 do
                 {
@@ -221,7 +231,7 @@ app.post("/users", function (req, res) {
                   /* Check that the token generated does not yet exist in the DB */
                   db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenResult}).toArray(function (err, docs) {
                     if (err) {
-                      console.log("Fourth");
+                      returnInvalid(res);
                     } else {
                       if (docs.length != 0) {
                         newToken = false;
@@ -241,8 +251,14 @@ app.post("/users", function (req, res) {
                   function (err, doc) {
                     if (err) {
                     } else {
-                      returnArray = {"token": sessionTokenResult};
-                      res.status(201).json(returnArray);
+                      db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
+                        if (err) {
+                          returnInvalid(res);
+                        } else {
+                          returnArray = {"token": sessionTokenResult, "userId": docs[0]._id};
+                          res.status(201).json(returnArray);
+                        }
+                      });
                     }
                   });
               }
@@ -373,8 +389,6 @@ app.get("/home/:username", function (req, res) {
               // Find photos of people being followed, add them to array and return
               docs.forEach(function (photoObject) {
                 currentId = photoObject._id.toString();
-                console.log(photoIdsToReturn);
-                console.log(photoIdsToReturn.indexOf(currentId) >= 0);
                 if (photoIdsToReturn.indexOf(currentId) >= 0) {
                   followingPhotos.push(photoObject);
                 }
@@ -410,7 +424,6 @@ app.post("/photos", parser_posts.single('image'), function (req, res) {
   description = req.body.description;
   category = req.body.category;
   sessionTokenGiven = req.body.sessionToken;
-  console.log(description);
   tags = description.match(/#\S+/gi);
   db.collection(SESSIONS_COLLECTION).find({sessionToken: sessionTokenGiven}).toArray(function (err, docs) {
     if (err) {
