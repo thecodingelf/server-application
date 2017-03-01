@@ -1,9 +1,9 @@
 /* INITIALIZE APPLICATION DEPENDECIES --------------------------------------------------------------------------------*/
 var express = require("express");
 var path = require("path");
-var cors = require("cors");
 var bodyParser = require("body-parser");
 var mongodb = require("mongodb");
+var cors = require("cors");
 // Multer, Cloudinary are for transmission and storage of images.
 var multer = require('multer');
 var cloudinary = require('cloudinary');
@@ -13,7 +13,13 @@ var password = require('password-hash-and-salt');
 
 var app = express();
 // cors allows Cross Origin Requests (requests will be rejected by the API if not this)
+
 app.use(cors());
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 app.use(bodyParser.json());
 
 /* -------------------------------------------------------------------------------------------------------------------*/
@@ -87,13 +93,14 @@ function handleError(res, reason, message, code) {
  username correspond to the entry in the database. Returns false as valid boolean value
  and "0000" as a security token if the entry is not found. (see README.md)
  */
-app.post("/users/in", function (req, res) {
+app.post("/users/in", function (req, res, next) {
 
   // Check that entered username is in database.
   db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
     // In case of an error. (username not found)
     if (err) {
       returnInvalid(res);
+
     }
     // If entered username or password are incorrect
     else if (docs.length == 0) {
@@ -104,7 +111,7 @@ app.post("/users/in", function (req, res) {
       userId = docs[0]._id;
       // Verify supplied password against salted hash stored in the database
       password(req.body.password).verifyAgainst(docs[0].hash, function (error, verified) {
-        if (error){
+        if (error) {
           returnInvalid(res);
         }
         if (!verified) {
@@ -115,7 +122,7 @@ app.post("/users/in", function (req, res) {
               returnInvalid(res);
             }
             // If there is already a session token for the user
-            else if (docs.length != 0){
+            else if (docs.length != 0) {
               sessionTokenResult = docs[0].sessionToken;
               db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
                 if (err) {
@@ -183,7 +190,7 @@ app.post("/users/in", function (req, res) {
  Session token to be supplied with request.
  collection (see README.md)
  */
-app.post("/users/out", function (req, res) {
+app.post("/users/out", function (req, res, next) {
   returnArray = {"valid": true};
   db.collection(SESSIONS_COLLECTION).deleteOne({sessionToken: req.body.sessionToken}) && res.status(201).json(returnArray);
 });
@@ -195,7 +202,7 @@ app.post("/users/out", function (req, res) {
  valid boolean value and "0000" as a security token if the entry is not found.
  (see README.md)
  */
-app.post("/users", function (req, res) {
+app.post("/users", function (req, res, next) {
   // Check that entered username is not in database.
   db.collection(USERS_COLLECTION).find({username: req.body.username}).toArray(function (err, docs) {
     if (err) {
@@ -284,7 +291,7 @@ app.post("/users", function (req, res) {
  containing username, profile picture, userId.
  (see README.md)
  */
-app.get("/users/:username", function (req, res) {
+app.get("/users/:username", function (req, res, next) {
   given_username = req.params.username;
   // Get user data from the DB
   db.collection(USERS_COLLECTION).find({username: {$regex: new RegExp(given_username, 'i')}}).toArray(function (err, docs) {
@@ -306,7 +313,7 @@ app.get("/users/:username", function (req, res) {
  containing image URL, imageId and datetime posted
  (see README.md)
  */
-app.get("/photos/:tag", function (req, res) {
+app.get("/photos/:tag", function (req, res, next) {
   // Get the regular expression for the tag searched
   tagSearched = req.params.tag;
   // If user has has not entered the hashtag prepend it to the string
@@ -349,7 +356,7 @@ app.get("/photos/:tag", function (req, res) {
  recent photos from users that person follows along with metadata.
  (see README.md)
  */
-app.get("/home/:username", function (req, res) {
+app.get("/home/:username", function (req, res, next) {
   username = req.params.username;
   // Store photos to display at home page here:
   followingPhotos = [];
@@ -412,7 +419,7 @@ app.get("/home/:username", function (req, res) {
  success, the result is sent to user as imageId.
  (see README.md)
  */
-app.post("/photos", parser_posts.single('image'), function (req, res) {
+app.post("/photos", parser_posts.single('image'), function (req, res, next) {
   // Get the raw data to be inserted into the database
   // Data of the file uploaded to Cloudinary
   file = req.file;
@@ -487,7 +494,7 @@ app.post("/photos", parser_posts.single('image'), function (req, res) {
  Leave a comment under a photo, with imageId, comment and sessionToken supplied
  (see README.md)
  */
-app.post("/photos/comment", function (req, res) {
+app.post("/photos/comment", function (req, res, next) {
   // Store the data supplied in a simpler fashion.
   comment = req.body.comment;
   id = req.body.id;
@@ -533,7 +540,7 @@ app.post("/photos/comment", function (req, res) {
  and sessionToken supplied
  (see README.md)
  */
-app.post("/photos/like", function (req, res) {
+app.post("/photos/like", function (req, res, next) {
   // Store the data supplied in a simpler fashion.
   id = req.body.id;
   sessionTokenGiven = req.body.sessionToken;
@@ -600,13 +607,14 @@ app.post("/photos/like", function (req, res) {
  Get the profile of the user with the images posted by providing userId
  (see README.md)
  */
-app.get("/users/profile/:id", function (req, res) {
+app.get("/users/profile/:id", function (req, res, next) {
   // Fallback if id provided is incorrect
   if (req.params.id.length != 24) {
     returnInvalid(res);
   }
   else {
     // Get user data from the DB
+    console.log(new ObjectID(req.params.id));console.log(req.params.id);
     db.collection(USERS_COLLECTION).find({"_id": new ObjectID(req.params.id)}).toArray(function (err, docs) {
       if (err) {
         returnInvalid(res);
@@ -616,30 +624,37 @@ app.get("/users/profile/:id", function (req, res) {
           "userId": req.params.id, "username": docs[0].username, "followers": docs[0].followers,
           "following": docs[0].following, "profilePicture": docs[0].profilePicture
         };
+        // Get photo/post ID objects to be searched through
         userPhotosIDs = docs[0].photos;
+        userPhotosIDs.forEach(function (id, index) {
+          userPhotosIDs[index] = new ObjectID(id);
+        });
+        console.log(userPhotosIDs);
         userPhotos = [];
         if (userPhotosIDs.length > 0) {
-          userPhotosIDs.forEach(function (photo, index) {
-            if (userPhotosIDs.length - 1 == index) {
-              lastindex = true
+          // Search through photo/post IDs
+          db.collection(PHOTOS_COLLECTION).find({"_id": {$in: userPhotosIDs}}).toArray(function (err, docs) {
+            if (err) {
+              returnInvalid(res);
+              console.log(docs);
+              console.log("Error! Here!");
             }
-            db.collection(PHOTOS_COLLECTION).find({"_id": new ObjectID(photo)}).toArray(function (err, docs) {
-              if (err) {
-                returnInvalid(res);
-              }
-              else {
+            else {
+              console.log(docs);
+              // For each of the photo/post object, add id, img and data to the array to be returned.
+              docs.forEach(function (photo, index) {
                 photo_object = {};
-                photo_object.id = docs[0]._id;
-                photo_object.img = docs[0].img;
-                photo_object.date = docs[0].date;
-
+                photo_object.id = photo._id;
+                photo_object.img = photo.img;
+                photo_object.date = photo.date;
+                console.log(index);
                 userPhotos.push(photo_object);
-                if (lastindex) {
-                  returnObject.photos = userPhotos;
-                  res.status(201).json(returnObject);
-                }
-              }
-            });
+              });
+              // Add all of the photos to user array to be returned
+              returnObject.photos = userPhotos;
+              console.log(returnObject);
+              res.status(201).json(returnObject);
+            }
           });
         }
         else {
@@ -650,10 +665,11 @@ app.get("/users/profile/:id", function (req, res) {
   }
 });
 
+
 /*
  Upload new profile picture using sessionToken
  */
-app.post("/users/profilepicture", parser_profile.single('image'), function (req, res) {
+app.post("/users/profilepicture", parser_profile.single('image'), function (req, res, next) {
   // Get the image information and the sessionToken
   file = req.file;
   fullUrl = file.secure_url;
@@ -689,7 +705,7 @@ app.post("/users/profilepicture", parser_profile.single('image'), function (req,
 /*
  Follow or unfollow specified user, using sessionToken
  */
-app.post("/users/follow", function (req, res) {
+app.post("/users/follow", function (req, res, next) {
   //Find followers of the user to follow
   usernameToFollow = req.body.usernameToFollow;
   db.collection(USERS_COLLECTION).find({username: usernameToFollow}).toArray(function (err, docs) {
@@ -753,7 +769,7 @@ app.post("/users/follow", function (req, res) {
  Get the photo and all related metadata to the client when imageId is specified.
  (see README.md)
  */
-app.get("/photos/object/:id", function (req, res) {
+app.get("/photos/object/:id", function (req, res, next) {
   // Fallback if id provided is incorrect
   if (req.params.id.length != 24) {
     returnInvalid(res);

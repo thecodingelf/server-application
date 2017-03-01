@@ -1,6 +1,6 @@
 {
   "name": "mesta-server",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Application serves data connected with Mesta client application",
   "main": "server.js",
   "scripts": {
